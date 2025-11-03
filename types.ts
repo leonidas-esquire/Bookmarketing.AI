@@ -1,3 +1,4 @@
+
 export interface Tool {
   id: string;
   title: string;
@@ -7,6 +8,11 @@ export interface Tool {
 }
 
 export type AspectRatio = "1:1" | "16:9" | "9:16" | "4:3" | "3:4";
+
+export interface User {
+  name: string;
+  avatarUrl: string;
+}
 
 // Fix: Centralized the AIStudio interface and global window declaration
 // to resolve a duplicate declaration error. This is now the single source of truth.

@@ -14,10 +14,25 @@ import { AudioTranscriber } from './components/AudioTranscriber';
 import { AudienceAnalyzer } from './components/AudienceAnalyzer';
 import { BookDistributor } from './components/BookDistributor';
 import { WebsiteBuilder } from './components/WebsiteBuilder';
-import { Tool } from './types';
+import { Tool, User } from './types';
+import { LoginScreen } from './components/LoginScreen';
 
 const App: React.FC = () => {
   const [activeTool, setActiveTool] = useState<Tool | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+
+  const handleLogin = () => {
+    // Simulate a successful login
+    setUser({
+      name: 'Jane Author',
+      avatarUrl: `https://api.dicebear.com/8.x/initials/svg?seed=Jane%20Author`,
+    });
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    setActiveTool(null); // Reset tool selection on logout
+  };
 
   const renderActiveTool = () => {
     switch (activeTool?.id) {
@@ -48,9 +63,13 @@ const App: React.FC = () => {
     }
   };
 
+  if (!user) {
+    return <LoginScreen onLogin={handleLogin} />;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-indigo-900 font-sans">
-      <Header setActiveTool={setActiveTool} />
+      <Header user={user} onLogout={handleLogout} setActiveTool={setActiveTool} />
       <main className="p-4 sm:p-6 lg:p-8">
         {renderActiveTool()}
       </main>
