@@ -3,15 +3,15 @@ import { generateVideoFromText, generateVideoFromImage } from '../services/gemin
 import { FileUploader } from './FileUploader';
 import { LoadingSpinner } from './LoadingSpinner';
 
-// Fix: Inlined the AIStudio type definition within the Window interface
-// to resolve issues where another global declaration for `window.aistudio` might exist.
-// Making `aistudio` optional (`?`) aligns with the runtime checks in the component.
+// Fix: Defined a named `AIStudio` interface for `window.aistudio` to prevent conflicts with other global type declarations.
+interface AIStudio {
+    hasSelectedApiKey: () => Promise<boolean>;
+    openSelectKey: () => Promise<void>;
+}
+
 declare global {
     interface Window {
-        aistudio?: {
-            hasSelectedApiKey: () => Promise<boolean>;
-            openSelectKey: () => Promise<void>;
-        };
+        aistudio?: AIStudio;
     }
 }
 

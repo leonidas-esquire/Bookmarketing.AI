@@ -14,6 +14,7 @@ const tools: Tool[] = [
   { id: 'cover-analyzer', title: 'Cover Feedback AI', description: 'Get AI-powered feedback on your book cover\'s marketability.', icon: 'fa-search-plus' },
   { id: 'copywriter', title: 'Marketing Copywriter', description: 'Generate blurbs, social media posts, and ad copy in seconds.', icon: 'fa-pencil-alt' },
   { id: 'market-research', title: 'Trend Spotter', description: 'Get up-to-date market insights with Google Search grounding.', icon: 'fa-chart-line' },
+  { id: 'audience-analyzer', title: 'Audience Analyzer', description: 'Upload your manuscript to identify your ideal reader demographic.', icon: 'fa-users' },
   { id: 'audiobook-creator', title: 'Audiobook Sampler', description: 'Convert text excerpts into high-quality audio samples.', icon: 'fa-microphone-alt' },
   { id: 'audio-transcriber', title: 'Author Dictation', description: 'Transcribe your spoken ideas, notes, or chapter drafts.', icon: 'fa-waveform' },
   { id: 'video-analyzer', title: 'Trailer Analyzer', description: 'Analyze videos for key information and emotional impact.', icon: 'fa-video', comingSoon: true },

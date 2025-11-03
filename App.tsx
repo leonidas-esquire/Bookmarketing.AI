@@ -11,6 +11,7 @@ import { MarketResearch } from './components/MarketResearch';
 import { MarketingChatbot } from './components/MarketingChatbot';
 import { AudiobookSampleCreator } from './components/AudiobookSampleCreator';
 import { AudioTranscriber } from './components/AudioTranscriber';
+import { AudienceAnalyzer } from './components/AudienceAnalyzer';
 import { Tool } from './types';
 
 const App: React.FC = () => {
@@ -34,6 +35,8 @@ const App: React.FC = () => {
         return <AudiobookSampleCreator />;
       case 'audio-transcriber':
         return <AudioTranscriber />;
+      case 'audience-analyzer':
+        return <AudienceAnalyzer />;
       default:
         return <Dashboard setActiveTool={setActiveTool} />;
     }

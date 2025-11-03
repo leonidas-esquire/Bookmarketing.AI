@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, GenerateContentResponse, Modality, Chat, Type } from "@google/genai";
 
 const getGenAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY as string });
@@ -123,6 +124,41 @@ export const analyzeImage = async (imageBase64: string, mimeType: string, prompt
 export const generateContent = async (prompt: string, model: 'gemini-2.5-pro' | 'gemini-2.5-flash' | 'gemini-flash-lite-latest'): Promise<string> => {
     const ai = getGenAI();
     const response = await ai.models.generateContent({ model, contents: prompt });
+    return response.text;
+};
+
+export const analyzeAudience = async (manuscriptText: string): Promise<string> => {
+    const ai = getGenAI();
+    const prompt = `
+Act as an expert book marketing analyst. I have provided a manuscript excerpt below. Your task is to perform a deep analysis of the text and generate a detailed "Ideal Reader Profile".
+
+The profile must be structured in Markdown and include the following sections:
+
+## 🎯 Ideal Reader Profile
+
+### **1. Primary Demographics**
+*   **Age Range:** (e.g., 18-25, 35-45)
+*   **Gender:** (e.g., Primarily female, Skews male, All genders)
+*   **Education Level:** (e.g., High School, College Graduate, Post-graduate)
+*   **Potential Occupations:** (List a few likely professions)
+
+### **2. Psychographics & Interests**
+*   **Core Values:** (e.g., Adventure, Family, Justice, Intellectual curiosity)
+*   **Hobbies and Interests:** (e.g., Hiking, Video games, Historical documentaries, Baking)
+*   **Lifestyle:** (e.g., Urban professional, Suburban parent, Digital nomad)
+*   **Media Consumption:** (e.g., Listens to true crime podcasts, reads The New Yorker, follows sci-fi influencers on Instagram)
+
+### **3. Comparable Authors & Titles**
+*   List 3-5 recently published books and/or authors that this reader would also enjoy. Briefly explain *why* each is a good comparison.
+
+### **4. Key Marketing Hooks**
+*   Identify the top 3-5 emotional triggers or key themes from the manuscript that would be most effective in ad copy, social media posts, and book blurbs.
+
+---
+MANUSCRIPT TEXT:
+${manuscriptText}
+`;
+    const response = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: prompt });
     return response.text;
 };
 
