@@ -13,6 +13,7 @@ import { AudiobookSampleCreator } from './components/AudiobookSampleCreator';
 import { AudioTranscriber } from './components/AudioTranscriber';
 import { AudienceAnalyzer } from './components/AudienceAnalyzer';
 import { BookDistributor } from './components/BookDistributor';
+import { WebsiteBuilder } from './components/WebsiteBuilder';
 import { Tool } from './types';
 
 const App: React.FC = () => {
@@ -40,6 +41,8 @@ const App: React.FC = () => {
         return <AudioTranscriber />;
       case 'audience-analyzer':
         return <AudienceAnalyzer />;
+      case 'website-builder':
+        return <WebsiteBuilder />;
       default:
         return <Dashboard setActiveTool={setActiveTool} />;
     }

@@ -3,34 +3,22 @@ import React, { useState, useCallback } from 'react';
 import { analyzeAudience } from '../services/geminiService';
 import { FileUploader } from './FileUploader';
 import { LoadingSpinner } from './LoadingSpinner';
-import ReactMarkdown from 'react-markdown';
+import { AudienceProfileDisplay } from './AudienceProfileDisplay';
 
 export const AudienceAnalyzer: React.FC = () => {
-  const [manuscriptText, setManuscriptText] = useState<string | null>(null);
-  const [analysisResult, setAnalysisResult] = useState<string | null>(null);
+  const [manuscriptFile, setManuscriptFile] = useState<File | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleFileSelect = useCallback((file: File) => {
     setError(null);
     setAnalysisResult(null);
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const text = event.target?.result;
-      if (typeof text === 'string') {
-        setManuscriptText(text);
-      } else {
-        setError("Could not read the file content.");
-      }
-    };
-    reader.onerror = () => {
-        setError("Failed to read the file.");
-    }
-    reader.readAsText(file);
+    setManuscriptFile(file);
   }, []);
 
   const handleAnalyze = async () => {
-    if (!manuscriptText) {
+    if (!manuscriptFile) {
       setError('Please upload your manuscript first.');
       return;
     }
@@ -38,10 +26,10 @@ export const AudienceAnalyzer: React.FC = () => {
     setError(null);
     setAnalysisResult(null);
     try {
-      const result = await analyzeAudience(manuscriptText);
+      const result = await analyzeAudience(manuscriptFile);
       setAnalysisResult(result);
     } catch (e) {
-      setError('Failed to analyze the manuscript. Please try again.');
+      setError('Failed to analyze the manuscript. The file may be invalid or the analysis failed. Please try again.');
       console.error(e);
     } finally {
       setIsLoading(false);
@@ -49,30 +37,41 @@ export const AudienceAnalyzer: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-4 animate-fade-in">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold">Audience Analyzer</h2>
-        <p className="text-indigo-200">Upload your manuscript to discover who will love your book.</p>
-      </div>
+    <div className="max-w-6xl mx-auto p-4 animate-fade-in">
+      {!analysisResult && (
+        <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-8">
+                <h2 className="text-3xl font-bold">Audience Analyzer</h2>
+                <p className="text-indigo-200">Upload your manuscript to discover who will love your book.</p>
+            </div>
 
-      <div className="bg-gray-800 p-6 rounded-lg shadow-lg mb-8">
-        <FileUploader onFileSelect={(file) => handleFileSelect(file)} accept="text/plain,.txt" label="Upload Manuscript (.txt file)" />
-        <button
-          onClick={handleAnalyze}
-          disabled={isLoading || !manuscriptText}
-          className="w-full mt-4 px-6 py-3 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 transition-colors disabled:bg-indigo-800 disabled:cursor-not-allowed"
-        >
-          {isLoading ? 'Analyzing...' : 'Find My Audience'}
-        </button>
-      </div>
+            <div className="bg-gray-800 p-6 rounded-lg shadow-lg mb-8">
+                <FileUploader onFileSelect={(file) => handleFileSelect(file)} accept=".pdf,.docx,.epub,.md,.txt" label="Upload Manuscript (.pdf, .docx, .epub, .md, .txt)" />
+                <button
+                onClick={handleAnalyze}
+                disabled={isLoading || !manuscriptFile}
+                className="w-full mt-4 px-6 py-3 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 transition-colors disabled:bg-indigo-800 disabled:cursor-not-allowed"
+                >
+                {isLoading ? 'Analyzing...' : 'Find My Audience'}
+                </button>
+            </div>
+        </div>
+      )}
 
       {error && <p className="text-red-400 mt-4 text-center">{error}</p>}
       
       <div className="mt-8">
         {isLoading && <LoadingSpinner message="Profiling your perfect reader..." />}
         {analysisResult && (
-          <div className="bg-gray-800 p-6 rounded-lg prose prose-invert prose-p:text-indigo-100 prose-headings:text-white max-w-none">
-            <ReactMarkdown>{analysisResult}</ReactMarkdown>
+          <div>
+            <div className="text-center mb-8">
+                <h2 className="text-3xl font-bold">Ideal Reader Profile</h2>
+                <p className="text-indigo-200">Here is the detailed breakdown of your target audience.</p>
+                 <button onClick={() => setAnalysisResult(null)} className="mt-4 px-4 py-2 text-sm bg-indigo-700 text-white font-semibold rounded-md hover:bg-indigo-800">
+                    Analyze Another
+                </button>
+            </div>
+            <AudienceProfileDisplay result={analysisResult} />
           </div>
         )}
       </div>
