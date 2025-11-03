@@ -1,0 +1,202 @@
+import { GoogleGenAI, GenerateContentResponse, Modality, Chat, Type } from "@google/genai";
+
+const getGenAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+
+export const generateImage = async (prompt: string, aspectRatio: string): Promise<string> => {
+  const ai = getGenAI();
+  const response = await ai.models.generateImages({
+    model: 'imagen-4.0-generate-001',
+    prompt,
+    config: {
+      numberOfImages: 1,
+      outputMimeType: 'image/jpeg',
+      aspectRatio: aspectRatio as "1:1" | "16:9" | "9:16" | "4:3" | "3:4",
+    },
+  });
+
+  if (response.generatedImages.length > 0) {
+    const base64ImageBytes = response.generatedImages[0].image.imageBytes;
+    return `data:image/jpeg;base64,${base64ImageBytes}`;
+  }
+  throw new Error("Image generation failed.");
+};
+
+export const editImage = async (prompt: string, imageBase64: string, mimeType: string): Promise<string> => {
+    const ai = getGenAI();
+    const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash-image',
+        contents: {
+            parts: [
+                {
+                    inlineData: {
+                        data: imageBase64,
+                        mimeType,
+                    },
+                },
+                {
+                    text: prompt,
+                },
+            ],
+        },
+        config: {
+            responseModalities: [Modality.IMAGE],
+        },
+    });
+
+    for (const part of response.candidates[0].content.parts) {
+        if (part.inlineData) {
+            return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+        }
+    }
+    throw new Error("Image editing failed.");
+};
+
+
+export const generateVideoFromText = async (prompt: string, aspectRatio: "16:9" | "9:16") => {
+    const ai = getGenAI();
+    let operation = await ai.models.generateVideos({
+      model: 'veo-3.1-fast-generate-preview',
+      prompt: prompt,
+      config: {
+        numberOfVideos: 1,
+        resolution: '720p',
+        aspectRatio: aspectRatio
+      }
+    });
+    while (!operation.done) {
+      await new Promise(resolve => setTimeout(resolve, 10000));
+      operation = await ai.operations.getVideosOperation({operation: operation});
+    }
+
+    const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
+    if (!downloadLink) throw new Error("Video generation failed to produce a download link.");
+    
+    const response = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
+    const blob = await response.blob();
+    return URL.createObjectURL(blob);
+};
+
+export const generateVideoFromImage = async (prompt: string, imageBase64: string, mimeType: string, aspectRatio: "16:9" | "9:16") => {
+    const ai = getGenAI();
+    let operation = await ai.models.generateVideos({
+      model: 'veo-3.1-fast-generate-preview',
+      prompt: prompt,
+      image: {
+        imageBytes: imageBase64,
+        mimeType: mimeType,
+      },
+      config: {
+        numberOfVideos: 1,
+        resolution: '720p',
+        aspectRatio: aspectRatio,
+      }
+    });
+    while (!operation.done) {
+      await new Promise(resolve => setTimeout(resolve, 10000));
+      operation = await ai.operations.getVideosOperation({operation: operation});
+    }
+
+    const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
+    if (!downloadLink) throw new Error("Video generation failed to produce a download link.");
+
+    const response = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
+    const blob = await response.blob();
+    return URL.createObjectURL(blob);
+};
+
+export const analyzeImage = async (imageBase64: string, mimeType: string, prompt: string): Promise<string> => {
+  const ai = getGenAI();
+  const imagePart = {
+    inlineData: {
+      mimeType: mimeType,
+      data: imageBase64,
+    },
+  };
+  const textPart = { text: prompt };
+  const response = await ai.models.generateContent({
+    model: 'gemini-2.5-flash',
+    contents: { parts: [imagePart, textPart] },
+  });
+  return response.text;
+};
+
+export const generateContent = async (prompt: string, model: 'gemini-2.5-pro' | 'gemini-2.5-flash' | 'gemini-flash-lite-latest'): Promise<string> => {
+    const ai = getGenAI();
+    const response = await ai.models.generateContent({ model, contents: prompt });
+    return response.text;
+};
+
+export const researchWithGoogle = async (prompt: string): Promise<{ text: string, sources: any[] }> => {
+    const ai = getGenAI();
+    const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
+        config: {
+            tools: [{googleSearch: {}}],
+        },
+    });
+    const sources = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
+    return { text: response.text, sources };
+};
+
+let chat: Chat | null = null;
+export const getChatInstance = (): Chat => {
+    if(!chat) {
+        const ai = getGenAI();
+        chat = ai.chats.create({
+            model: 'gemini-2.5-flash',
+            config: {
+                systemInstruction: 'You are Bookmarketing.AI Mentor, a friendly and expert AI assistant for authors. Provide concise, actionable advice on book marketing.',
+            },
+        });
+    }
+    return chat;
+}
+
+export const generateSpeech = async (text: string): Promise<AudioBuffer> => {
+    const ai = getGenAI();
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash-preview-tts",
+      contents: [{ parts: [{ text: text }] }],
+      config: {
+        responseModalities: [Modality.AUDIO],
+        speechConfig: {
+            voiceConfig: {
+              prebuiltVoiceConfig: { voiceName: 'Kore' },
+            },
+        },
+      },
+    });
+
+    const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+    if (!base64Audio) throw new Error("TTS generation failed.");
+    
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({sampleRate: 24000});
+    
+    const decode = (base64: string) => {
+        const binaryString = atob(base64);
+        const len = binaryString.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+        return bytes;
+    }
+
+    const decodeAudioData = async (data: Uint8Array, ctx: AudioContext, sampleRate: number, numChannels: number): Promise<AudioBuffer> => {
+        const dataInt16 = new Int16Array(data.buffer);
+        const frameCount = dataInt16.length / numChannels;
+        const buffer = ctx.createBuffer(numChannels, frameCount, sampleRate);
+        for (let channel = 0; channel < numChannels; channel++) {
+            const channelData = buffer.getChannelData(channel);
+            for (let i = 0; i < frameCount; i++) {
+                channelData[i] = dataInt16[i * numChannels + channel] / 32768.0;
+            }
+        }
+        return buffer;
+    };
+    
+    return await decodeAudioData(decode(base64Audio), audioContext, 24000, 1);
+};
+
+export { GoogleGenAI };

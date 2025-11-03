@@ -1,0 +1,7 @@
+{
+  "name": "Bookmarketing.AI: AI Marketing for Authors",
+  "description": "An AI-powered suite of tools for authors to create stunning marketing materials, from cover art and book trailers to ad copy and market research, helping you reach one million readers.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
