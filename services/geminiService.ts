@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, GenerateContentResponse, Modality, Chat, Type } from "@google/genai";
 
 const getGenAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY as string });
@@ -189,7 +188,7 @@ export const getChatInstance = (): Chat => {
     return chat;
 }
 
-export const generateSpeech = async (text: string): Promise<AudioBuffer> => {
+export const generateSpeech = async (text: string, voiceName: string): Promise<AudioBuffer> => {
     const ai = getGenAI();
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash-preview-tts",
@@ -198,7 +197,7 @@ export const generateSpeech = async (text: string): Promise<AudioBuffer> => {
         responseModalities: [Modality.AUDIO],
         speechConfig: {
             voiceConfig: {
-              prebuiltVoiceConfig: { voiceName: 'Kore' },
+              prebuiltVoiceConfig: { voiceName: voiceName },
             },
         },
       },

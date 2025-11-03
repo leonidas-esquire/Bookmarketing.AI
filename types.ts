@@ -1,4 +1,3 @@
-
 export interface Tool {
   id: string;
   title: string;
@@ -11,12 +10,14 @@ export type AspectRatio = "1:1" | "16:9" | "9:16" | "4:3" | "3:4";
 
 // Fix: Centralized the AIStudio interface and global window declaration
 // to resolve a duplicate declaration error. This is now the single source of truth.
-interface AIStudio {
-    hasSelectedApiKey: () => Promise<boolean>;
-    openSelectKey: () => Promise<void>;
-}
-
 declare global {
+    // FIX: Moved AIStudio interface into `declare global` to make it a global type,
+    // resolving conflicts with other declarations of `window.aistudio`.
+    interface AIStudio {
+        hasSelectedApiKey: () => Promise<boolean>;
+        openSelectKey: () => Promise<void>;
+    }
+
     interface Window {
         aistudio?: AIStudio;
     }

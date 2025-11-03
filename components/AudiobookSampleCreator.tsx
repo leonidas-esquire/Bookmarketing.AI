@@ -1,10 +1,23 @@
-
 import React, { useState, useEffect } from 'react';
 import { generateSpeech } from '../services/geminiService';
 import { LoadingSpinner } from './LoadingSpinner';
 
+const voices = [
+    { id: 'Zephyr', name: 'Zephyr (Female)' },
+    { id: 'Luna', name: 'Luna (Female)' },
+    { id: 'Nova', name: 'Nova (Female)' },
+    { id: 'Stella', name: 'Stella (Female)' },
+    { id: 'Aurora', name: 'Aurora (Female)' },
+    { id: 'Puck', name: 'Puck (Male)' },
+    { id: 'Charon', name: 'Charon (Male)' },
+    { id: 'Kore', name: 'Kore (Male)' },
+    { id: 'Fenrir', name: 'Fenrir (Male)' },
+    { id: 'Sol', name: 'Sol (Female)' },
+];
+
 export const AudiobookSampleCreator: React.FC = () => {
   const [inputText, setInputText] = useState('');
+  const [selectedVoice, setSelectedVoice] = useState<string>(voices[0].id);
   const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null);
   const [audioSource, setAudioSource] = useState<AudioBufferSourceNode | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -49,7 +62,7 @@ export const AudiobookSampleCreator: React.FC = () => {
     setIsPlaying(false);
 
     try {
-      const buffer = await generateSpeech(inputText);
+      const buffer = await generateSpeech(inputText, selectedVoice);
       setAudioBuffer(buffer);
     } catch (e) {
       setError('Failed to generate audio. Please try again.');
@@ -90,13 +103,26 @@ export const AudiobookSampleCreator: React.FC = () => {
           placeholder="Paste a paragraph from your book here..."
           className="w-full p-3 bg-gray-700 border border-gray-600 rounded-md mb-4 focus:ring-2 focus:ring-indigo-500 focus:outline-none h-48"
         />
-        <button
-          onClick={handleGenerate}
-          disabled={isLoading}
-          className="w-full px-6 py-3 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 transition-colors disabled:bg-indigo-800 disabled:cursor-not-allowed"
-        >
-          {isLoading ? 'Generating Audio...' : 'Generate Audio'}
-        </button>
+        <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-grow">
+                <label htmlFor="voice-select" className="block text-sm font-medium text-indigo-200 mb-1">Voice</label>
+                 <select
+                    id="voice-select"
+                    value={selectedVoice}
+                    onChange={(e) => setSelectedVoice(e.target.value)}
+                    className="w-full p-3 bg-gray-700 border border-gray-600 rounded-md focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                 >
+                    {voices.map(voice => <option key={voice.id} value={voice.id}>{voice.name}</option>)}
+                </select>
+            </div>
+            <button
+              onClick={handleGenerate}
+              disabled={isLoading}
+              className="w-full sm:w-auto self-end px-6 py-3 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 transition-colors disabled:bg-indigo-800 disabled:cursor-not-allowed"
+            >
+              {isLoading ? 'Generating Audio...' : 'Generate Audio'}
+            </button>
+        </div>
       </div>
       
       {error && <p className="text-red-400 mt-4 text-center">{error}</p>}
