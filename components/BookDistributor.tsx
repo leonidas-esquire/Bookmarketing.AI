@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import { FileUploader } from './FileUploader';
 import { LoadingSpinner } from './LoadingSpinner';
@@ -137,33 +136,33 @@ export const BookDistributor: React.FC = () => {
                 </div>
 
                 {result.amazonKdp && renderAccordion('Amazon KDP', <>
-                    {renderCopyableBlock('Suggested Keywords', result.amazonKdp.keywords.join(', '))}
-                    {renderCopyableBlock('Suggested Categories', result.amazonKdp.categories.join('\n'))}
+                    {renderCopyableBlock('Suggested Keywords', (result.amazonKdp.keywords || []).join(', '))}
+                    {renderCopyableBlock('Suggested Categories', (result.amazonKdp.categories || []).join('\n'))}
                     <h4 className="font-semibold text-indigo-300 mb-2">A+ Content Ideas</h4>
-                    {result.amazonKdp.aPlusContentIdeas.map((idea: any, i: number) => <div key={i} className="bg-gray-900 p-3 rounded-md mb-2"><strong>{idea.title}:</strong> {idea.description}</div>)}
+                    {(result.amazonKdp.aPlusContentIdeas || []).map((idea: any, i: number) => <div key={i} className="bg-gray-900 p-3 rounded-md mb-2"><strong>{idea.title}:</strong> {idea.description}</div>)}
                 </>)}
                 
                 {result.socialMedia && renderAccordion('Social Media', <>
                     <h4 className="font-semibold text-indigo-300 mb-2">Post Ideas</h4>
-                    {result.socialMedia.postIdeas.map((idea: any, i: number) => <div key={i} className="bg-gray-900 p-4 rounded-md mb-3">
+                    {(result.socialMedia.postIdeas || []).map((idea: any, i: number) => <div key={i} className="bg-gray-900 p-4 rounded-md mb-3">
                         <h5 className="font-bold text-lg mb-2">{idea.ideaTitle}</h5>
                         {renderCopyableBlock('Twitter', `${idea.twitterCopy}\n\n${idea.hashtags}`)}
                         {renderCopyableBlock('Instagram', `${idea.instagramCopy}\n\n${idea.hashtags}`)}
                         {renderCopyableBlock('Facebook', `${idea.facebookCopy}\n\n${idea.hashtags}`)}
                     </div>)}
                     <h4 className="font-semibold text-indigo-300 mt-6 mb-2">AI Image Prompts</h4>
-                    {result.socialMedia.imagePrompts.map((prompt: string, i: number) => renderCopyableBlock(`Prompt #${i + 1}`, prompt))}
+                    {(result.socialMedia.imagePrompts || []).map((prompt: string, i: number) => renderCopyableBlock(`Prompt #${i + 1}`, prompt))}
                     <h4 className="font-semibold text-indigo-300 mt-6 mb-2">Video Concepts (Reels/TikTok)</h4>
-                     {result.socialMedia.videoConcepts.map((concept: any, i: number) => <div key={i} className="bg-gray-900 p-3 rounded-md mb-2"><strong>{concept.title}:</strong> {concept.concept}</div>)}
+                     {(result.socialMedia.videoConcepts || []).map((concept: any, i: number) => <div key={i} className="bg-gray-900 p-3 rounded-md mb-2"><strong>{concept.title}:</strong> {concept.concept}</div>)}
                 </>)}
                  
                 {result.authorWebsite && renderAccordion('Author Website', <>
                     {renderCopyableBlock('Press Kit (Markdown)', result.authorWebsite.pressKitMarkdown)}
                     <h4 className="font-semibold text-indigo-300 mt-6 mb-2">Blog Post Topics</h4>
-                     {result.authorWebsite.blogPostTopics.map((topic: any, i: number) => <div key={i} className="bg-gray-900 p-3 rounded-md mb-2"><strong>{topic.title}:</strong> {topic.outline}</div>)}
+                     {(result.authorWebsite.blogPostTopics || []).map((topic: any, i: number) => <div key={i} className="bg-gray-900 p-3 rounded-md mb-2"><strong>{topic.title}:</strong> {topic.outline}</div>)}
                 </>)}
                  
-                {result.emailNewsletter && renderAccordion('Email Newsletter', <>
+                {result.emailNewsletter && result.emailNewsletter.launchAnnouncement && renderAccordion('Email Newsletter', <>
                     {renderCopyableBlock('Subject Line', result.emailNewsletter.launchAnnouncement.subject)}
                     <div className="mt-4"><ReactMarkdown className="prose prose-sm prose-invert prose-p:my-2 bg-gray-900 p-4 rounded-md">{result.emailNewsletter.launchAnnouncement.body}</ReactMarkdown></div>
                 </>)}

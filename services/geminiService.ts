@@ -440,5 +440,114 @@ The output must be a JSON object conforming to the provided schema.
     return JSON.parse(jsonText);
 };
 
+export const generateSalesFunnel = async (manuscriptFile: File): Promise<any> => {
+    const ai = getGenAI();
+    const manuscriptPart = await fileToGenerativePart(manuscriptFile);
+
+    const prompt = `
+Act as an expert 7-figure marketing funnel architect specializing in high-conversion book launches.
+I have provided a book manuscript. Your task is to analyze its content, tone, and themes to generate a complete, high-converting sales funnel plan.
+The output must be a detailed JSON object conforming to the provided schema.
+All generated copy (headlines, emails, ads) must be persuasive, emotionally resonant, and perfectly tailored to the book's ideal reader.
+`;
+    
+    const response = await ai.models.generateContent({
+        model: 'gemini-2.5-pro',
+        contents: { parts: [{ text: prompt }, manuscriptPart] },
+        config: {
+            responseMimeType: "application/json",
+            responseSchema: {
+                type: Type.OBJECT,
+                properties: {
+                    funnelName: { type: Type.STRING, description: "A catchy, descriptive name for this funnel, e.g., 'The Crimson Cipher Bestseller Funnel'." },
+                    targetAudienceSummary: { type: Type.STRING, description: "A 2-3 sentence summary of the ideal reader this funnel is designed to attract." },
+                    topOfFunnel: {
+                        type: Type.OBJECT,
+                        properties: {
+                            leadMagnet: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    title: { type: Type.STRING, description: "A compelling title for the lead magnet." },
+                                    description: { type: Type.STRING, description: "A short description of the lead magnet." },
+                                    format: { type: Type.STRING, description: "e.g., PDF Checklist, Bonus Chapter, Video Training" }
+                                }
+                            },
+                            adCopy: {
+                                type: Type.ARRAY,
+                                items: {
+                                    type: Type.OBJECT,
+                                    properties: {
+                                        platform: { type: Type.STRING, description: "e.g., Facebook/Instagram, TikTok, Google Ads" },
+                                        headline: { type: Type.STRING },
+                                        body: { type: Type.STRING }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    middleOfFunnel: {
+                        type: Type.OBJECT,
+                        properties: {
+                            landingPage: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    headline: { type: Type.STRING, description: "The main headline for the lead magnet opt-in page." },
+                                    subheadline: { type: Type.STRING },
+                                    bulletPoints: { type: Type.ARRAY, items: { type: Type.STRING }, description: "3-5 benefit-driven bullet points." },
+                                    callToAction: { type: Type.STRING, description: "The text for the sign-up button." }
+                                }
+                            },
+                            emailNurtureSequence: {
+                                type: Type.ARRAY,
+                                items: {
+                                    type: Type.OBJECT,
+                                    properties: {
+                                        day: { type: Type.INTEGER },
+                                        subject: { type: Type.STRING },
+                                        body: { type: Type.STRING, description: "The full email body in Markdown format." }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    bottomOfFunnel: {
+                        type: Type.OBJECT,
+                        properties: {
+                            salesPage: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    headline: { type: Type.STRING },
+                                    videoScriptHook: { type: Type.STRING, description: "The first 15 seconds of a sales video script." },
+                                    longFormCopyOutline: { type: Type.ARRAY, items: { type: Type.STRING }, description: "A list of section headers for the sales page." },
+                                    callToAction: { type: Type.STRING, description: "The text for the main buy button." }
+                                }
+                            },
+                            orderBump: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    title: { type: Type.STRING, description: "e.g., 'Add the Audiobook for just $7!'" },
+                                    description: { type: Type.STRING },
+                                    pricePoint: { type: Type.STRING, description: "e.g., $7, $19.99" }
+                                }
+                            },
+                            oneTimeOfferUpsell: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    title: { type: Type.STRING, description: "e.g., 'Get the Author's Masterclass Bundle!'" },
+                                    description: { type: Type.STRING },
+                                    pricePoint: { type: Type.STRING, description: "e.g., $47, $97" }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    const jsonText = response.text.trim();
+    return JSON.parse(jsonText);
+};
+
 
 export { GoogleGenAI };

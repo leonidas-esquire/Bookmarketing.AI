@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import { FileUploader } from './FileUploader';
 import { LoadingSpinner } from './LoadingSpinner';
@@ -92,9 +91,9 @@ export const WebsiteBuilder: React.FC = () => {
                     <div>
                         <h4 className="font-semibold mb-2">Color Palette</h4>
                         <div className="flex space-x-2 rounded overflow-hidden">
-                            {Object.entries(plan.colorPalette).map(([name, color]) => (
+                            {Object.entries(plan.colorPalette || {}).map(([name, color]) => (
                                 <div key={name} className="flex-1 text-center" title={`${name}: ${color}`}>
-                                    <div className="w-full h-12" style={{ backgroundColor: color }}></div>
+                                    <div className="w-full h-12" style={{ backgroundColor: color as string }}></div>
                                     <p className="text-xs mt-1 capitalize text-gray-400">{name}</p>
                                 </div>
                             ))}
@@ -102,27 +101,27 @@ export const WebsiteBuilder: React.FC = () => {
                     </div>
                      <div>
                         <h4 className="font-semibold mb-2 mt-4">Typography</h4>
-                        <p><strong>Headings:</strong> <span className="font-mono p-1 bg-gray-700 rounded text-sm">{plan.typography.headingFont}</span></p>
-                        <p><strong>Body:</strong> <span className="font-mono p-1 bg-gray-700 rounded text-sm">{plan.typography.bodyFont}</span></p>
+                        <p><strong>Headings:</strong> <span className="font-mono p-1 bg-gray-700 rounded text-sm">{plan.typography?.headingFont}</span></p>
+                        <p><strong>Body:</strong> <span className="font-mono p-1 bg-gray-700 rounded text-sm">{plan.typography?.bodyFont}</span></p>
                     </div>
                 </ResultCard>
 
                 <ResultCard title="Hero Section" icon="fa-bullhorn">
-                    <div className="p-4 rounded-md" style={{backgroundColor: plan.colorPalette.background}}>
-                        <p className="text-2xl font-bold" style={{color: plan.colorPalette.heading}}>{plan.heroSection.headline}</p>
-                        <p className="mt-2" style={{color: plan.colorPalette.text}}>{plan.heroSection.subheadline}</p>
-                        <button className="px-5 py-2 mt-4 font-bold rounded shadow-lg" style={{backgroundColor: plan.colorPalette.primary, color: plan.colorPalette.text}}>{plan.heroSection.callToAction}</button>
+                    <div className="p-4 rounded-md" style={{backgroundColor: plan.colorPalette?.background}}>
+                        <p className="text-2xl font-bold" style={{color: plan.colorPalette?.heading}}>{plan.heroSection?.headline}</p>
+                        <p className="mt-2" style={{color: plan.colorPalette?.text}}>{plan.heroSection?.subheadline}</p>
+                        <button className="px-5 py-2 mt-4 font-bold rounded shadow-lg" style={{backgroundColor: plan.colorPalette?.primary, color: plan.colorPalette?.text}}>{plan.heroSection?.callToAction}</button>
                     </div>
                 </ResultCard>
 
                 <div className="lg:col-span-2">
                     <ResultCard title="About The Book" icon="fa-book-open">
-                        <p className="whitespace-pre-wrap leading-relaxed">{plan.aboutTheBookSection.summary}</p>
+                        <p className="whitespace-pre-wrap leading-relaxed">{plan.aboutTheBookSection?.summary}</p>
                         <div className="mt-4">
                              <h4 className="font-semibold mb-2">Key Themes</h4>
                              <div className="flex flex-wrap gap-2">
-                                {plan.aboutTheBookSection.keyThemes.map(theme => (
-                                    <span key={theme} className="text-sm px-3 py-1 rounded-full font-medium" style={{backgroundColor: plan.colorPalette.secondary, color: plan.colorPalette.heading}}>{theme}</span>
+                                {(plan.aboutTheBookSection?.keyThemes || []).map(theme => (
+                                    <span key={theme} className="text-sm px-3 py-1 rounded-full font-medium" style={{backgroundColor: plan.colorPalette?.secondary, color: plan.colorPalette?.heading}}>{theme}</span>
                                 ))}
                              </div>
                         </div>
@@ -132,21 +131,21 @@ export const WebsiteBuilder: React.FC = () => {
                  <ResultCard title="About The Author" icon="fa-user-edit">
                     <div>
                         <h4 className="font-semibold mb-2">Bio Suggestion</h4>
-                        <p className="italic">"{plan.aboutTheAuthorSection.bioSuggestion}"</p>
+                        <p className="italic">"{plan.aboutTheAuthorSection?.bioSuggestion}"</p>
                     </div>
                      <div className="mt-4">
                         <h4 className="font-semibold mb-2">Photo Style</h4>
-                        <p>{plan.aboutTheAuthorSection.photoStyle}</p>
+                        <p>{plan.aboutTheAuthorSection?.photoStyle}</p>
                     </div>
                 </ResultCard>
 
                 <ResultCard title="Email List Builder" icon="fa-envelope">
                      <div className="text-center p-4 bg-gray-900 rounded-lg">
-                        <h4 className="font-bold text-lg text-white">{plan.leadMagnetIdea.title}</h4>
-                        <p className="mt-1 text-indigo-200">{plan.leadMagnetIdea.description}</p>
+                        <h4 className="font-bold text-lg text-white">{plan.leadMagnetIdea?.title}</h4>
+                        <p className="mt-1 text-indigo-200">{plan.leadMagnetIdea?.description}</p>
                         <div className="mt-3 flex">
                             <input type="email" placeholder="Enter your email..." className="flex-grow p-2 rounded-l-md bg-gray-700 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-                            <button className="px-4 rounded-r-md font-semibold" style={{backgroundColor: plan.colorPalette.primary, color: plan.colorPalette.text}}>Sign Up</button>
+                            <button className="px-4 rounded-r-md font-semibold" style={{backgroundColor: plan.colorPalette?.primary, color: plan.colorPalette?.text}}>Sign Up</button>
                         </div>
                     </div>
                 </ResultCard>
