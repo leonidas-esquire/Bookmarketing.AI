@@ -3,18 +3,6 @@ import { generateVideoFromText, generateVideoFromImage } from '../services/gemin
 import { FileUploader } from './FileUploader';
 import { LoadingSpinner } from './LoadingSpinner';
 
-// Fix: Defined a named `AIStudio` interface for `window.aistudio` to prevent conflicts with other global type declarations.
-interface AIStudio {
-    hasSelectedApiKey: () => Promise<boolean>;
-    openSelectKey: () => Promise<void>;
-}
-
-declare global {
-    interface Window {
-        aistudio?: AIStudio;
-    }
-}
-
 const fileToBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();

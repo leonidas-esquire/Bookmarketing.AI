@@ -12,6 +12,7 @@ import { MarketingChatbot } from './components/MarketingChatbot';
 import { AudiobookSampleCreator } from './components/AudiobookSampleCreator';
 import { AudioTranscriber } from './components/AudioTranscriber';
 import { AudienceAnalyzer } from './components/AudienceAnalyzer';
+import { BookDistributor } from './components/BookDistributor';
 import { Tool } from './types';
 
 const App: React.FC = () => {
@@ -25,6 +26,8 @@ const App: React.FC = () => {
         return <ImageGenerator />;
       case 'video-generator':
         return <VideoGenerator />;
+      case 'book-distributor':
+        return <BookDistributor />;
       case 'cover-analyzer':
         return <ContentAnalyzer />;
       case 'copywriter':

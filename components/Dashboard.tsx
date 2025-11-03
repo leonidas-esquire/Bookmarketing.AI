@@ -11,6 +11,7 @@ const tools: Tool[] = [
   { id: 'image-generator', title: 'AI Illustrator', description: 'Generate unique concept art and promotional images from text.', icon: 'fa-paint-brush' },
   { id: 'image-editor', title: 'Cover Art Studio', description: 'Edit your book cover or promo images using simple text commands.', icon: 'fa-wand-magic-sparkles' },
   { id: 'video-generator', title: 'Book Trailer Creator', description: 'Create short, engaging video clips from text or your book cover.', icon: 'fa-film' },
+  { id: 'book-distributor', title: 'Book Distributor', description: 'Prepare a distribution kit for major marketing channels.', icon: 'fa-rocket' },
   { id: 'cover-analyzer', title: 'Cover Feedback AI', description: 'Get AI-powered feedback on your book cover\'s marketability.', icon: 'fa-search-plus' },
   { id: 'copywriter', title: 'Marketing Copywriter', description: 'Generate blurbs, social media posts, and ad copy in seconds.', icon: 'fa-pencil-alt' },
   { id: 'market-research', title: 'Trend Spotter', description: 'Get up-to-date market insights with Google Search grounding.', icon: 'fa-chart-line' },

@@ -235,4 +235,86 @@ export const generateSpeech = async (text: string): Promise<AudioBuffer> => {
     return await decodeAudioData(decode(base64Audio), audioContext, 24000, 1);
 };
 
+const fileToGenerativePart = async (file: File) => {
+    const base64EncodedDataPromise = new Promise<string>((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
+      reader.readAsDataURL(file);
+    });
+    return {
+      inlineData: { data: await base64EncodedDataPromise, mimeType: file.type },
+    };
+};
+
+export const generateDistributionKit = async (formData: any): Promise<any> => {
+    const ai = getGenAI();
+    const { manuscriptText, coverFile, title, author, genre, keywords, description, channels } = formData;
+
+    const coverPart = await fileToGenerativePart(coverFile);
+
+    const prompt = `
+Act as a world-class book launch strategist. I'm providing an author's manuscript excerpt, book cover, and metadata.
+Generate a comprehensive "Distribution Kit" as a JSON object based on the provided schema.
+Deeply analyze the content to create tailored, high-quality marketing materials for these channels: ${channels.join(', ')}.
+
+**Metadata:**
+*   Title: ${title}
+*   Author: ${author}
+*   Genre: ${genre}
+*   Keywords: ${keywords}
+*   Book Description: ${description}
+
+**Manuscript Excerpt:**
+---
+${manuscriptText}
+---
+`;
+    
+    const response = await ai.models.generateContent({
+        model: 'gemini-2.5-pro',
+        contents: { parts: [ { text: prompt }, coverPart ] },
+        config: {
+            responseMimeType: "application/json",
+            responseSchema: {
+                type: Type.OBJECT,
+                properties: {
+                    amazonKdp: {
+                        type: Type.OBJECT,
+                        properties: {
+                            keywords: { type: Type.ARRAY, items: { type: Type.STRING } },
+                            categories: { type: Type.ARRAY, items: { type: Type.STRING } },
+                            aPlusContentIdeas: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { title: { type: Type.STRING }, description: { type: Type.STRING } } } }
+                        }
+                    },
+                    socialMedia: {
+                        type: Type.OBJECT,
+                        properties: {
+                            postIdeas: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { ideaTitle: { type: Type.STRING }, instagramCopy: { type: Type.STRING }, twitterCopy: { type: Type.STRING }, facebookCopy: { type: Type.STRING }, hashtags: { type: Type.STRING } } } },
+                            imagePrompts: { type: Type.ARRAY, items: { type: Type.STRING } },
+                            videoConcepts: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { title: { type: Type.STRING }, concept: { type: Type.STRING } } } }
+                        }
+                    },
+                    authorWebsite: {
+                        type: Type.OBJECT,
+                        properties: {
+                            pressKitMarkdown: { type: Type.STRING },
+                            blogPostTopics: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { title: { type: Type.STRING }, outline: { type: Type.STRING } } } }
+                        }
+                    },
+                    emailNewsletter: {
+                        type: Type.OBJECT,
+                        properties: {
+                            launchAnnouncement: { type: Type.OBJECT, properties: { subject: { type: Type.STRING }, body: { type: Type.STRING } } }
+                        }
+                    }
+                }
+            }
+        },
+    });
+
+    const jsonText = response.text.trim();
+    return JSON.parse(jsonText);
+};
+
+
 export { GoogleGenAI };
