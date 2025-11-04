@@ -42,7 +42,7 @@ export const CampaignDisplay: React.FC<{ plan: any }> = ({ plan }) => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <InfoCard title="Genre & Market Positioning"><ReactMarkdown>{step1_bookAnalysis?.genreAndPositioning || ''}</ReactMarkdown></InfoCard>
                     <InfoCard title="Unique Selling Proposition"><p className="text-lg italic">"{step1_bookAnalysis?.uniqueSellingProposition}"</p></InfoCard>
-                    <InfoCard title="Target Audience Summary" className="lg:col-span-2"><ReactMarkdown>{step1_bookAnalysis?.targetAudienceProfile?.summary || ''}</ReactMarkdown></InfoCard>
+                    <InfoCard title="Target Audience Summary" className="lg:col-span-2"><ReactMarkdown>{step1_bookAnalysis?.targetAudienceProfile?.dayInTheLife || ''}</ReactMarkdown></InfoCard>
                     <InfoCard title="Competitive Analysis">
                         {(step1_bookAnalysis?.competitiveAnalysis || []).map((comp: any, i:number) => (
                             <div key={i} className="py-2 border-b border-gray-700 last:border-b-0">
@@ -57,10 +57,26 @@ export const CampaignDisplay: React.FC<{ plan: any }> = ({ plan }) => {
             
             <Accordion title="Step 2: Campaign Architecture" icon="fa-sitemap">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <InfoCard title="24-Hour Launch Plan"><ReactMarkdown>{step2_campaignArchitecture?.launchPlan_24Hour}</ReactMarkdown></InfoCard>
-                    <InfoCard title="30-Day Momentum Plan"><ReactMarkdown>{step2_campaignArchitecture?.momentumPlan_30Day}</ReactMarkdown></InfoCard>
-                    <InfoCard title="90-Day Viral Expansion Plan" className="md:col-span-2"><ReactMarkdown>{step2_campaignArchitecture?.viralPlan_90Day}</ReactMarkdown></InfoCard>
-                    <InfoCard title="365-Day Million-Reader Roadmap" className="md:col-span-2"><ReactMarkdown>{step2_campaignArchitecture?.millionReaderRoadmap_365Day}</ReactMarkdown></InfoCard>
+                    <InfoCard title="24-Hour Launch Plan">
+                        <ul className="list-disc list-inside space-y-2">
+                            {(step2_campaignArchitecture?.launchPlan_24Hour || []).map((item: any, i: number) => (
+                                <li key={i}>
+                                    <strong>{item.hour}:</strong> {item.action} - <span className="text-gray-400">{item.details}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    </InfoCard>
+                    <InfoCard title="30-Day Momentum Plan">
+                        <ul className="list-disc list-inside space-y-2">
+                            {(step2_campaignArchitecture?.momentumPlan_30Day || []).map((item: any, i: number) => (
+                                <li key={i}>
+                                    <strong>{item.day}:</strong> {item.action} - <span className="text-gray-400">{item.details}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    </InfoCard>
+                    <InfoCard title="90-Day Viral Expansion Plan" className="md:col-span-2"><ReactMarkdown>{step2_campaignArchitecture?.viralPlan_90Day || ''}</ReactMarkdown></InfoCard>
+                    <InfoCard title="365-Day Million-Reader Roadmap" className="md:col-span-2"><ReactMarkdown>{step2_campaignArchitecture?.millionReaderRoadmap_365Day || ''}</ReactMarkdown></InfoCard>
                 </div>
             </Accordion>
 
@@ -95,14 +111,26 @@ export const CampaignDisplay: React.FC<{ plan: any }> = ({ plan }) => {
                     <p>{step4_assetGeneration?.copyLibrary?.bookBlurbs?.short}</p>
                     <h5 className="font-bold text-indigo-400 mt-2">Medium</h5>
                     <p>{step4_assetGeneration?.copyLibrary?.bookBlurbs?.medium}</p>
+                     <h5 className="font-bold text-indigo-400 mt-2">Long</h5>
+                    <p>{step4_assetGeneration?.copyLibrary?.bookBlurbs?.long}</p>
                 </InfoCard>
                  <InfoCard title="Copy Library: Ad Hooks">
-                    <ul className="list-disc list-inside">
-                        {(step4_assetGeneration?.copyLibrary?.adCopyHooks || []).map((hook: string, i:number) => <li key={i}>{hook}</li>)}
-                    </ul>
+                     {(step4_assetGeneration?.copyLibrary?.adCopyHooks || []).map((category: any, i: number) => (
+                        <div key={i} className="mb-3 last:mb-0">
+                            <h5 className="font-bold text-indigo-400">{category.angle}</h5>
+                            <ul className="list-disc list-inside pl-4">
+                                {(category.hooks || []).map((hook: string, j: number) => <li key={j}>{hook}</li>)}
+                            </ul>
+                        </div>
+                    ))}
                 </InfoCard>
-                <InfoCard title="30-Second Video Trailer Script">
-                    <ReactMarkdown>{step4_assetGeneration?.videoTrailerScript_30s}</ReactMarkdown>
+                <InfoCard title="Video Trailer Scripts">
+                    {(step4_assetGeneration?.videoTrailerScripts || []).map((trailer: any, i: number) => (
+                        <div key={i} className="mb-4 last:mb-0 border-b border-gray-700 pb-2 last:border-b-0 last:pb-0">
+                            <h5 className="font-bold text-indigo-400">{trailer.concept}</h5>
+                            <ReactMarkdown>{trailer.script}</ReactMarkdown>
+                        </div>
+                    ))}
                 </InfoCard>
                 <InfoCard title="First 30 Days Implementation Timeline">
                     {(step4_assetGeneration?.implementationTimeline_30Day || []).map((week: any, i:number) => (

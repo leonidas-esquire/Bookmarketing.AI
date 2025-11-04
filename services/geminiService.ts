@@ -266,44 +266,44 @@ export const generateMarketingCampaign = async (manuscriptFile: File): Promise<a
     const manuscriptPart = await fileToGenerativePart(manuscriptFile);
 
     const prompt = `
-ROLE: You are "Athena", a world-class AI marketing strategist and campaign architect with the capabilities of a full-service marketing agency. You have been tasked with creating a comprehensive, actionable, multi-million dollar marketing campaign for an author's book.
+ROLE: You are "Athena", a world-class AI marketing strategist and campaign architect with the capabilities of a full-service marketing agency. You have been tasked with creating an exhaustive, deeply detailed, and highly actionable multi-million dollar marketing campaign for an author's book.
 
-OBJECTIVE: I have provided an author's complete book manuscript. Your task is to perform a deep, multi-faceted analysis and generate a complete go-to-market strategy and all associated marketing assets. The goal is to create a plan that could realistically help the author reach one million readers.
+OBJECTIVE: I have provided an author's complete book manuscript. Your task is to perform a deep, multi-faceted analysis and generate a complete go-to-market strategy and all associated marketing assets. The goal is to create a plan that could realistically help the author reach one million readers. Your analysis and recommendations must be incredibly specific, verbose, and backed by reasoning derived from the manuscript.
 
 TASK: Execute the following 4-step process. Your final output MUST be a single, large, and valid JSON object that strictly adheres to the provided schema. Do not include any explanatory text outside of the JSON structure. Be specific, insightful, and generate high-quality, ready-to-use content.
 
-**Step 1: Comprehensive Book Analysis**
--   Deeply analyze the manuscript's content, themes, tone, style, and characters.
--   Identify the precise genre and sub-genres.
--   Profile the ideal target reader in extreme detail (demographics, psychographics, pain points, desires, media habits).
--   Identify 3-5 key competitor books and articulate this book's unique selling proposition (USP) and differentiation strategy.
--   Evaluate market opportunities, potential cultural sensitivities, and the book's overall commercial potential.
+**Step 1: Comprehensive Book Analysis (Extreme Detail)**
+-   Deeply analyze the manuscript's content, identifying primary, secondary, and tertiary themes; core emotional arcs of main characters; and the overall narrative structure.
+-   Identify the precise genre, sub-genres, and niche micro-genres. Define the book's unique market position.
+-   Profile the ideal target reader persona (The "Avatar"). Create a "Day in the Life" narrative. Detail their demographics, psychographics, core pain points (what problems they face), and deepest desires (what transformation they seek). List their specific media habits (blogs, podcasts, influencers, TV shows they follow).
+-   Identify 3-5 key competitor books. For each, analyze their strengths and weaknesses in detail and articulate this book's unique selling proposition (USP) and clear differentiation strategy against each.
+-   Evaluate market opportunities, potential cultural sensitivities, and provide a detailed analysis of the book's commercial potential with justifications.
 
-**Step 2: Instant Campaign Architecture**
+**Step 2: Instant Campaign Architecture (Granular Detail)**
 -   Based on the analysis, design a multi-stage campaign architecture.
--   Create an aggressive 24-hour launch plan to maximize initial sales velocity.
--   Develop a 30-day plan to build momentum and gather reviews.
--   Outline a 90-day viral expansion strategy focusing on organic growth.
--   Create a 365-day "Million-Reader Roadmap" for long-term, sustained sales.
--   Suggest a tiered budget allocation (e.g., Low, Medium, High) and key performance indicators (KPIs) to track success.
--   Identify potential risks and suggest mitigation strategies.
+-   Create an aggressive 24-hour launch plan with an hour-by-hour checklist of actions to maximize initial sales velocity.
+-   Develop a 30-day plan with a day-by-day checklist to build momentum, gather reviews, and trigger algorithms.
+-   Outline a 90-day viral expansion strategy focusing on organic growth tactics and community building.
+-   Create a 365-day "Million-Reader Roadmap" outlining quarterly goals and strategic focuses for long-term, sustained sales.
+-   Suggest a tiered budget allocation (e.g., Low, Medium, High) with specific percentage breakdowns for ads, content creation, and influencer outreach. List the key performance indicators (KPIs) for each stage.
+-   Identify potential risks in a detailed risk matrix and suggest concrete mitigation strategies for each.
 
-**Step 3: Multi-Channel Campaign Creation**
+**Step 3: Multi-Channel Campaign Creation (Actionable Detail)**
 -   Develop specific, actionable strategies for key marketing channels.
--   For Amazon: Outline a strategy for keywords, categories, A+ content, and a sample AMS ad campaign structure.
--   For Social Media: Create a 1-month content calendar for two key platforms (e.g., TikTok, Instagram), including post ideas, captions, and hashtags.
--   For Email Marketing: Outline a 5-part email nurture sequence for new subscribers, from welcome to sales pitch.
--   For Influencers: Suggest a profile for the ideal influencer and provide an outreach template.
--   Provide a high-level content marketing/SEO strategy (e.g., blog post ideas that tie into the book's themes).
+-   For Amazon: Outline a detailed strategy for keywords (long-tail and short-tail), categories (at least 10), A+ content modules, and create 3 distinct Amazon Ads campaign structures (e.g., Auto, Keyword Targeting, Product Targeting) with sample ad copy.
+-   For Social Media: Create a full 1-month content calendar for two key platforms (e.g., TikTok, Instagram). For the first week, provide the FULL post copy, visual ideas/prompts, and optimal hashtags for each day.
+-   For Email Marketing: Outline a 7-part "Welcome & Nurture" email sequence for new subscribers. Provide the subject line and FULL body copy for each of the 7 emails.
+-   For Influencers: Suggest 3 specific, real-world influencer profiles (or archetypes) ideal for this book and provide a personalized outreach email template for each.
+-   Provide a detailed content marketing/SEO strategy, including 5 blog post ideas with target keywords, a brief outline, and a compelling title for each.
 
-**Step 4: Asset Generation and Implementation Guide**
+**Step 4: Asset Generation and Implementation Guide (Comprehensive Detail)**
 -   Generate a library of ready-to-use marketing copy.
--   Write 3 compelling book blurbs (short, medium, long).
--   Write 5 different ad copy hooks for paid social media.
--   Provide visual asset specifications (e.g., "For Instagram, create a moody, cinematic carousel post using the following quote...").
--   Write a script for a 30-second video trailer.
--   Create a press release template.
--   Outline a high-level implementation timeline, breaking down the first 30 days into weekly action steps.
+-   Write 3 compelling book blurbs (short, medium, and a long version for retail pages).
+-   Write 10 different ad copy hooks, categorized by emotional angle (e.g., Curiosity, Fear, Urgency, Desire).
+-   Provide detailed visual asset specifications and creative briefs (e.g., "For Instagram, create a moody, 5-slide cinematic carousel post using the following quote... a prompt for an AI image generator could be...").
+-   Write 2 distinct scripts for a 30-second video trailer (e.g., one plot-focused, one theme-focused), including narration, on-screen text, and visual cues.
+-   Create a comprehensive press release template, pre-filled with compelling hooks and quotes from the book.
+-   Outline a detailed implementation timeline, breaking down the first 30 days into weekly action-item checklists.
 `;
     
     const response = await ai.models.generateContent({
@@ -312,14 +312,22 @@ TASK: Execute the following 4-step process. Your final output MUST be a single, 
         config: {
             responseMimeType: "application/json",
             maxOutputTokens: 16384,
-            thinkingConfig: { thinkingBudget: 8192 },
+            thinkingConfig: { thinkingBudget: 4096 },
             responseSchema: {
                 type: Type.OBJECT,
                 properties: {
                     step1_bookAnalysis: {
                         type: Type.OBJECT,
                         properties: {
-                            genreAndPositioning: { type: Type.STRING, description: "Detailed classification of genre, sub-genre, and market positioning statement." },
+                            genreAndPositioning: { type: Type.STRING, description: "Detailed classification of genre, sub-genre, micro-genres and market positioning statement." },
+                            coreAnalysis: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    primaryTheme: { type: Type.STRING },
+                                    secondaryThemes: { type: Type.ARRAY, items: { type: Type.STRING } },
+                                    characterArcs: { type: Type.STRING, description: "Analysis of the core emotional arcs of the main characters." }
+                                }
+                            },
                             targetAudienceProfile: { 
                                 type: Type.OBJECT,
                                 properties: {
@@ -327,6 +335,7 @@ TASK: Execute the following 4-step process. Your final output MUST be a single, 
                                     demographics: { type: Type.STRING },
                                     psychographics: { type: Type.STRING },
                                     mediaHabits: { type: Type.STRING },
+                                    dayInTheLife: { type: Type.STRING, description: "A narrative 'day in the life' of the ideal reader." }
                                 }
                             },
                             competitiveAnalysis: {
@@ -336,6 +345,8 @@ TASK: Execute the following 4-step process. Your final output MUST be a single, 
                                     properties: {
                                         title: { type: Type.STRING },
                                         author: { type: Type.STRING },
+                                        strengths: { type: Type.STRING },
+                                        weaknesses: { type: Type.STRING },
                                         differentiation: { type: Type.STRING, description: "How this book is different and better." }
                                     }
                                 }
@@ -349,8 +360,30 @@ TASK: Execute the following 4-step process. Your final output MUST be a single, 
                     step2_campaignArchitecture: {
                         type: Type.OBJECT,
                         properties: {
-                            launchPlan_24Hour: { type: Type.STRING, description: "Actionable plan for the first 24 hours of launch." },
-                            momentumPlan_30Day: { type: Type.STRING, description: "Strategy for the first 30 days." },
+                            launchPlan_24Hour: {
+                                type: Type.ARRAY,
+                                description: "Hour-by-hour checklist for the first 24 hours of launch.",
+                                items: {
+                                    type: Type.OBJECT,
+                                    properties: {
+                                        hour: { type: Type.STRING, description: "e.g., 'Hour 1-2', 'Hour 3'" },
+                                        action: { type: Type.STRING },
+                                        details: { type: Type.STRING }
+                                    }
+                                }
+                            },
+                            momentumPlan_30Day: {
+                                type: Type.ARRAY,
+                                description: "Day-by-day checklist for the first 30 days.",
+                                items: {
+                                    type: Type.OBJECT,
+                                    properties: {
+                                        day: { type: Type.STRING, description: "e.g., 'Day 1', 'Day 2-3'" },
+                                        action: { type: Type.STRING },
+                                        details: { type: Type.STRING }
+                                    }
+                                }
+                            },
                             viralPlan_90Day: { type: Type.STRING, description: "Strategy for days 31-90." },
                             millionReaderRoadmap_365Day: { type: Type.STRING, description: "Long-term strategy for the first year." },
                             budgetAllocation: { 
@@ -359,6 +392,7 @@ TASK: Execute the following 4-step process. Your final output MUST be a single, 
                                     low: { type: Type.STRING, description: "Recommendations for a low budget." },
                                     medium: { type: Type.STRING, description: "Recommendations for a medium budget." },
                                     high: { type: Type.STRING, description: "Recommendations for a high budget." },
+                                    breakdown: { type: Type.STRING, description: "Example percentage breakdown for a medium budget (e.g., Ads: 50%, Content: 30%, Influencers: 20%)." }
                                 }
                             },
                             performanceMetrics: { type: Type.ARRAY, items: { type: Type.STRING }, description: "List of key KPIs to track." },
@@ -373,7 +407,19 @@ TASK: Execute the following 4-step process. Your final output MUST be a single, 
                                 properties: {
                                     keywords: { type: Type.ARRAY, items: { type: Type.STRING } },
                                     categories: { type: Type.ARRAY, items: { type: Type.STRING } },
-                                    advertisingPlan: { type: Type.STRING, description: "A sample Amazon Ads campaign structure." }
+                                    advertisingPlan: { type: Type.STRING, description: "A detailed Amazon Ads campaign strategy." },
+                                    sampleAdGroups: {
+                                        type: Type.ARRAY,
+                                        items: {
+                                            type: Type.OBJECT,
+                                            properties: {
+                                                campaignType: { type: Type.STRING, description: "e.g., 'Keyword Targeting', 'Product Targeting'" },
+                                                adGroupName: { type: Type.STRING },
+                                                targetKeywordsOrASINs: { type: Type.ARRAY, items: { type: Type.STRING } },
+                                                adCopy: { type: Type.STRING }
+                                            }
+                                        }
+                                    }
                                 }
                             },
                             socialMediaCampaigns: {
@@ -383,14 +429,15 @@ TASK: Execute the following 4-step process. Your final output MUST be a single, 
                                     properties: {
                                         platform: { type: Type.STRING },
                                         strategy: { type: Type.STRING },
-                                        contentCalendar_1Month: {
+                                        contentCalendar_FirstWeek: {
                                             type: Type.ARRAY,
                                             items: {
                                                 type: Type.OBJECT,
                                                 properties: {
-                                                    week: { type: Type.INTEGER },
-                                                    theme: { type: Type.STRING },
-                                                    postIdeas: { type: Type.ARRAY, items: { type: Type.STRING } },
+                                                    day: { type: Type.STRING },
+                                                    postCopy: { type: Type.STRING },
+                                                    visualIdea: { type: Type.STRING },
+                                                    hashtags: { type: Type.STRING }
                                                 }
                                             }
                                         }
@@ -399,13 +446,13 @@ TASK: Execute the following 4-step process. Your final output MUST be a single, 
                             },
                             emailMarketingSequence: {
                                 type: Type.ARRAY,
-                                description: "A sequence of emails for a new subscriber.",
+                                description: "A 7-part sequence of emails for a new subscriber.",
                                 items: {
                                     type: Type.OBJECT,
                                     properties: {
                                         day: { type: Type.INTEGER },
                                         subject: { type: Type.STRING },
-                                        body: { type: Type.STRING }
+                                        body: { type: Type.STRING, description: "The full HTML/Markdown body of the email." }
                                     }
                                 }
                             },
@@ -413,7 +460,18 @@ TASK: Execute the following 4-step process. Your final output MUST be a single, 
                                 type: Type.OBJECT,
                                 properties: {
                                     idealProfile: { type: Type.STRING },
-                                    outreachTemplate: { type: Type.STRING }
+                                    outreachTemplate: { type: Type.STRING },
+                                    influencerArchetypes: {
+                                        type: Type.ARRAY,
+                                        items: {
+                                            type: Type.OBJECT,
+                                            properties: {
+                                                archetype: { type: Type.STRING, description: "e.g., 'The Academic Reviewer', 'The Aesthetic BookToker'" },
+                                                example: { type: Type.STRING, description: "A real-world example or description of one." },
+                                                personalizedPitch: { type: Type.STRING }
+                                            }
+                                        }
+                                    }
                                 }
                             },
                             contentMarketingStrategy: {
@@ -424,6 +482,8 @@ TASK: Execute the following 4-step process. Your final output MUST be a single, 
                                     properties: {
                                         title: { type: Type.STRING },
                                         description: { type: Type.STRING },
+                                        targetKeywords: { type: Type.ARRAY, items: { type: Type.STRING } },
+                                        briefOutline: { type: Type.STRING }
                                     }
                                 }
                             }
@@ -443,11 +503,29 @@ TASK: Execute the following 4-step process. Your final output MUST be a single, 
                                             long: { type: Type.STRING },
                                         }
                                     },
-                                    adCopyHooks: { type: Type.ARRAY, items: { type: Type.STRING } },
+                                    adCopyHooks: {
+                                        type: Type.ARRAY,
+                                        items: {
+                                            type: Type.OBJECT,
+                                            properties: {
+                                                angle: { type: Type.STRING, description: "e.g., 'Curiosity', 'Urgency', 'Social Proof'" },
+                                                hooks: { type: Type.ARRAY, items: { type: Type.STRING } }
+                                            }
+                                        }
+                                    },
                                 }
                             },
                             visualAssetGuidelines: { type: Type.STRING, description: "Guidelines and ideas for creating visual assets." },
-                            videoTrailerScript_30s: { type: Type.STRING, description: "A complete 30-second video script with scene descriptions." },
+                            videoTrailerScripts: {
+                                type: Type.ARRAY,
+                                items: {
+                                    type: Type.OBJECT,
+                                    properties: {
+                                        concept: { type: Type.STRING, description: "e.g., 'Plot-Focused', 'Theme-Focused'" },
+                                        script: { type: Type.STRING, description: "A complete 30-second video script with scene descriptions." }
+                                    }
+                                }
+                            },
                             pressReleaseTemplate: { type: Type.STRING, description: "A ready-to-use press release template." },
                             implementationTimeline_30Day: {
                                 type: Type.ARRAY,
@@ -575,7 +653,7 @@ Based on all this information, generate the complete JSON output according to th
         config: {
             responseMimeType: "application/json",
             maxOutputTokens: 16384,
-            thinkingConfig: { thinkingBudget: 8192 },
+            thinkingConfig: { thinkingBudget: 4096 },
             responseSchema: {
                 type: Type.OBJECT,
                 properties: {
@@ -938,7 +1016,7 @@ export const generateCompleteVideoMarketingPlan = async (formData: any): Promise
         config: {
             responseMimeType: "application/json",
             maxOutputTokens: 16384,
-            thinkingConfig: { thinkingBudget: 8192 },
+            thinkingConfig: { thinkingBudget: 4096 },
             responseSchema: {
                 type: Type.OBJECT,
                 properties: {
