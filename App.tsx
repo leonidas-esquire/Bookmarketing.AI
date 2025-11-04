@@ -11,17 +11,14 @@ import { MarketResearch } from './components/MarketResearch';
 import { MarketingChatbot } from './components/MarketingChatbot';
 import { AudiobookSampleCreator } from './components/AudiobookSampleCreator';
 import { AudioTranscriber } from './components/AudioTranscriber';
-import { AudienceAnalyzer } from './components/AudienceAnalyzer';
-import { BookDistributor } from './components/BookDistributor';
 import { WebsiteBuilder } from './components/WebsiteBuilder';
 import { Tool, User, SalesPageConfig, SalesRecord } from './types';
 import { LoginScreen } from './components/LoginScreen';
 import { FunnelBuilder } from './components/FunnelBuilder';
-import { MarketingVideoCreator } from './components/MarketingVideoCreator';
-import { SalesAnalytics } from './components/SalesAnalytics';
 import { DirectSalesChannel } from './components/DirectSalesChannel';
 import { PublicSalesPage } from './components/PublicSalesPage';
 import { generateSalesData } from './services/salesDataService';
+import { LeftSidebar } from './components/LeftSidebar';
 
 
 const App: React.FC = () => {
@@ -66,7 +63,7 @@ const App: React.FC = () => {
   };
 
 
-  const renderActiveTool = () => {
+  const renderMainStage = () => {
     switch (activeTool?.id) {
       case 'image-editor':
         return <ImageEditor />;
@@ -74,10 +71,6 @@ const App: React.FC = () => {
         return <ImageGenerator />;
       case 'video-generator':
         return <VideoGenerator />;
-      case 'marketing-video-creator':
-        return <MarketingVideoCreator />;
-      case 'book-distributor':
-        return <BookDistributor />;
       case 'funnel-builder':
         return <FunnelBuilder />;
       case 'cover-analyzer':
@@ -90,12 +83,8 @@ const App: React.FC = () => {
         return <AudiobookSampleCreator />;
       case 'audio-transcriber':
         return <AudioTranscriber />;
-      case 'audience-analyzer':
-        return <AudienceAnalyzer />;
       case 'website-builder':
         return <WebsiteBuilder />;
-      case 'sales-analytics':
-        return <SalesAnalytics user={user!} salesData={salesData} />;
       case 'direct-sales-channel':
         return <DirectSalesChannel 
             user={user!} 
@@ -122,10 +111,15 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-indigo-900 font-sans">
+    <div className="h-screen bg-gradient-to-br from-gray-900 to-indigo-900 font-sans flex flex-col">
       <Header user={user} onLogout={handleLogout} setActiveTool={setActiveTool} />
-      <main className="p-4 sm:p-6 lg:p-8">
-        {renderActiveTool()}
+      <main className="flex flex-1 overflow-hidden">
+        <LeftSidebar user={user} salesData={salesData} />
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-4 sm:p-6 lg:p-8">
+            {renderMainStage()}
+          </div>
+        </div>
       </main>
       <MarketingChatbot />
     </div>
