@@ -24,6 +24,7 @@ export const VideoGenerator: React.FC = () => {
   const [prompt, setPrompt] = useState('');
   const [imageFile, setImageFile] = useState<{file: File, url: string} | null>(null);
   const [aspectRatio, setAspectRatio] = useState<'16:9' | '9:16'>('16:9');
+  const [resolution, setResolution] = useState<'720p' | '1080p'>('720p');
   const [generatedVideo, setGeneratedVideo] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -80,9 +81,9 @@ export const VideoGenerator: React.FC = () => {
       let videoUrl;
       if (mode === 'image' && imageFile) {
         const base64 = await fileToBase64(imageFile.file);
-        videoUrl = await generateVideoFromImage(prompt, base64, imageFile.file.type, aspectRatio);
+        videoUrl = await generateVideoFromImage(prompt, base64, imageFile.file.type, aspectRatio, resolution);
       } else {
-        videoUrl = await generateVideoFromText(prompt, aspectRatio);
+        videoUrl = await generateVideoFromText(prompt, aspectRatio, resolution);
       }
       setGeneratedVideo(videoUrl);
     } catch (e: any) {
@@ -144,6 +145,18 @@ export const VideoGenerator: React.FC = () => {
             >
               <option value="16:9">16:9 (Landscape)</option>
               <option value="9:16">9:16 (Portrait)</option>
+            </select>
+          </div>
+          <div className="flex-grow">
+            <label htmlFor="resolution-vid" className="block text-sm font-medium text-indigo-200 mb-1">Resolution</label>
+            <select
+              id="resolution-vid"
+              value={resolution}
+              onChange={(e) => setResolution(e.target.value as '720p' | '1080p')}
+              className="w-full p-3 bg-gray-700 border border-gray-600 rounded-md focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+            >
+              <option value="720p">720p (Fast)</option>
+              <option value="1080p">1080p (High Quality)</option>
             </select>
           </div>
           <button

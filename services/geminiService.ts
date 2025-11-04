@@ -156,15 +156,45 @@ export const editImage = async (prompt: string, imageBase64: string, mimeType: s
     throw new Error("Image editing failed.");
 };
 
+export const removeImageBackground = async (imageBase64: string, mimeType: string): Promise<string> => {
+    const ai = getGenAI();
+    const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash-image',
+        contents: {
+            parts: [
+                {
+                    inlineData: {
+                        data: imageBase64,
+                        mimeType,
+                    },
+                },
+                {
+                    text: "Please remove the background from this image, leaving only the main subject. The new background should be a clean, solid white.",
+                },
+            ],
+        },
+        config: {
+            responseModalities: [Modality.IMAGE],
+        },
+    });
 
-export const generateVideoFromText = async (prompt: string, aspectRatio: "16:9" | "9:16") => {
+    for (const part of response.candidates[0].content.parts) {
+        if (part.inlineData) {
+            return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+        }
+    }
+    throw new Error("Background removal failed.");
+};
+
+
+export const generateVideoFromText = async (prompt: string, aspectRatio: "16:9" | "9:16", resolution: '720p' | '1080p') => {
     const ai = getGenAI();
     let operation = await ai.models.generateVideos({
       model: 'veo-3.1-fast-generate-preview',
       prompt: prompt,
       config: {
         numberOfVideos: 1,
-        resolution: '720p',
+        resolution: resolution,
         aspectRatio: aspectRatio
       }
     });
@@ -181,7 +211,7 @@ export const generateVideoFromText = async (prompt: string, aspectRatio: "16:9" 
     return URL.createObjectURL(blob);
 };
 
-export const generateVideoFromImage = async (prompt: string, imageBase64: string, mimeType: string, aspectRatio: "16:9" | "9:16") => {
+export const generateVideoFromImage = async (prompt: string, imageBase64: string, mimeType: string, aspectRatio: "16:9" | "9:16", resolution: '720p' | '1080p') => {
     const ai = getGenAI();
     let operation = await ai.models.generateVideos({
       model: 'veo-3.1-fast-generate-preview',
@@ -192,7 +222,7 @@ export const generateVideoFromImage = async (prompt: string, imageBase64: string
       },
       config: {
         numberOfVideos: 1,
-        resolution: '720p',
+        resolution: resolution,
         aspectRatio: aspectRatio,
       }
     });
