@@ -1,79 +1,135 @@
-import React, { useState, useCallback } from 'react';
-import { analyzeAudience } from '../services/geminiService';
+import React, { useState, useCallback, useEffect } from 'react';
+import { generateMarketingCampaign } from '../services/geminiService';
 import { FileUploader } from './FileUploader';
-import { LoadingSpinner } from './LoadingSpinner';
-import { AudienceProfileDisplay } from './AudienceProfileDisplay';
+import { CampaignDisplay } from './AudienceProfileDisplay';
 
-export const AudienceAnalyzer: React.FC = () => {
-  const [manuscriptFile, setManuscriptFile] = useState<File | null>(null);
-  const [analysisResult, setAnalysisResult] = useState<any | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+const Stepper: React.FC<{ currentStep: number }> = ({ currentStep }) => {
+    const steps = [
+        { title: "Book Analysis", icon: "fa-search" },
+        { title: "Campaign Architecture", icon: "fa-sitemap" },
+        { title: "Multi-Channel Strategy", icon: "fa-share-alt" },
+        { title: "Asset Generation", icon: "fa-file-alt" },
+    ];
+    return (
+        <div className="space-y-6">
+            {steps.map((step, index) => {
+                const stepNumber = index + 1;
+                const status = currentStep > stepNumber ? 'complete' : (currentStep === stepNumber ? 'in-progress' : 'pending');
+                return (
+                    <div key={step.title} className="flex items-center gap-4">
+                        <div className={`
+                            w-10 h-10 rounded-full flex items-center justify-center text-white flex-shrink-0
+                            ${status === 'complete' ? 'bg-green-500' : ''}
+                            ${status === 'in-progress' ? 'bg-indigo-500' : ''}
+                            ${status === 'pending' ? 'bg-gray-600' : ''}
+                        `}>
+                            {status === 'complete' ? <i className="fas fa-check"></i> : (
+                             status === 'in-progress' ? <i className="fas fa-spinner fa-spin"></i> : <i className={`fas ${step.icon}`}></i>
+                            )}
+                        </div>
+                        <h3 className={`font-semibold ${status === 'pending' ? 'text-gray-500' : 'text-white'}`}>{step.title}</h3>
+                    </div>
+                );
+            })}
+        </div>
+    );
+};
 
-  const handleFileSelect = useCallback((file: File) => {
-    setError(null);
-    setAnalysisResult(null);
-    setManuscriptFile(file);
-  }, []);
 
-  const handleAnalyze = async () => {
-    if (!manuscriptFile) {
-      setError('Please upload your manuscript first.');
-      return;
+export const CampaignGenerator: React.FC = () => {
+    const [manuscriptFile, setManuscriptFile] = useState<File | null>(null);
+    const [campaignPlan, setCampaignPlan] = useState<any | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [progress, setProgress] = useState({ step: 1, message: '' });
+
+    const handleFileSelect = useCallback((file: File) => {
+        setError(null);
+        setCampaignPlan(null);
+        setManuscriptFile(file);
+    }, []);
+
+    const handleGenerate = async () => {
+        if (!manuscriptFile) {
+            setError('Please upload your manuscript first.');
+            return;
+        }
+        setIsLoading(true);
+        setError(null);
+        setCampaignPlan(null);
+
+        const messages = [
+            "Analyzing manuscript themes and tone...",
+            "Identifying ideal reader psychographics...",
+            "Evaluating competitive landscape...",
+            "Architecting 24-hour launch activation...",
+            "Developing 30-day momentum strategy...",
+            "Mapping multi-channel campaigns (Social, Email, Ads)...",
+            "Generating copy library and ad hooks...",
+            "Writing video trailer script...",
+            "Finalizing implementation timeline...",
+        ];
+        let messageIndex = 0;
+        const interval = setInterval(() => {
+            const currentStep = Math.min(4, Math.floor((messageIndex / (messages.length-1)) * 4) + 1);
+            setProgress({ step: currentStep, message: messages[messageIndex] });
+            messageIndex = (messageIndex + 1) % messages.length;
+        }, 3500);
+
+        try {
+            const result = await generateMarketingCampaign(manuscriptFile);
+            setCampaignPlan(result);
+        } catch (e: any) {
+            setError(`Failed to generate the campaign: ${e.message}`);
+            console.error(e);
+        } finally {
+            clearInterval(interval);
+            setIsLoading(false);
+        }
+    };
+
+    if (isLoading) {
+        return (
+            <div className="max-w-md mx-auto p-4 text-center">
+                 <h2 className="text-2xl font-bold text-white mb-6">Generating Your Campaign...</h2>
+                 <p className="text-indigo-200 mb-8">This comprehensive process can take 3-5 minutes. Please be patient while the AI architects your path to one million readers.</p>
+                 <div className="bg-gray-800 p-8 rounded-lg shadow-lg">
+                    <Stepper currentStep={progress.step} />
+                    <p className="mt-8 text-indigo-300 h-8 animate-fade-in">{progress.message}</p>
+                 </div>
+            </div>
+        );
     }
-    setIsLoading(true);
-    setError(null);
-    setAnalysisResult(null);
-    try {
-      const result = await analyzeAudience(manuscriptFile);
-      setAnalysisResult(result);
-    } catch (e) {
-      setError('Failed to analyze the manuscript. The file may be invalid or the analysis failed. Please try again.');
-      console.error(e);
-    } finally {
-      setIsLoading(false);
+    
+    if (campaignPlan) {
+        return (
+            <div>
+                 <button onClick={() => setCampaignPlan(null)} className="mb-4 px-4 py-2 text-sm bg-indigo-700 text-white font-semibold rounded-md hover:bg-indigo-800">
+                    <i className="fas fa-arrow-left mr-2"></i>Analyze Another Manuscript
+                </button>
+                <CampaignDisplay plan={campaignPlan} />
+            </div>
+        )
     }
-  };
 
-  return (
-    <div className="max-w-6xl mx-auto p-4 animate-fade-in">
-      {!analysisResult && (
-        <div className="max-w-4xl mx-auto">
+    return (
+        <div className="max-w-2xl mx-auto p-4 animate-fade-in">
             <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold">Audience Analyzer</h2>
-                <p className="text-indigo-200">Upload your manuscript to discover who will love your book.</p>
+                <h2 className="text-3xl font-bold">Audience & Campaign Generator</h2>
+                <p className="text-indigo-200">Upload your manuscript to build a complete marketing strategy.</p>
             </div>
 
             <div className="bg-gray-800 p-6 rounded-lg shadow-lg mb-8">
-                <FileUploader onFileSelect={(file) => handleFileSelect(file)} accept=".pdf,.md,.txt" label="Upload Manuscript (.pdf, .md, .txt)" />
+                <FileUploader onFileSelect={(file) => handleFileSelect(file)} accept=".pdf,.md,.txt,.docx" label="Upload Manuscript (.pdf, .md, .txt, .docx)" />
                 <button
-                onClick={handleAnalyze}
-                disabled={isLoading || !manuscriptFile}
-                className="w-full mt-4 px-6 py-3 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 transition-colors disabled:bg-indigo-800 disabled:cursor-not-allowed"
+                    onClick={handleGenerate}
+                    disabled={isLoading || !manuscriptFile}
+                    className="w-full mt-4 px-6 py-3 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 transition-colors disabled:bg-indigo-800 disabled:cursor-not-allowed"
                 >
-                {isLoading ? 'Analyzing...' : 'Find My Audience'}
+                    Generate Full Campaign
                 </button>
             </div>
+            {error && <p className="text-red-400 mt-4 text-center">{error}</p>}
         </div>
-      )}
-
-      {error && <p className="text-red-400 mt-4 text-center">{error}</p>}
-      
-      <div className="mt-8">
-        {isLoading && <LoadingSpinner message="Profiling your perfect reader..." />}
-        {analysisResult && (
-          <div>
-            <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold">Ideal Reader Profile</h2>
-                <p className="text-indigo-200">Here is the detailed breakdown of your target audience.</p>
-                 <button onClick={() => setAnalysisResult(null)} className="mt-4 px-4 py-2 text-sm bg-indigo-700 text-white font-semibold rounded-md hover:bg-indigo-800">
-                    Analyze Another
-                </button>
-            </div>
-            <AudienceProfileDisplay result={analysisResult} />
-          </div>
-        )}
-      </div>
-    </div>
-  );
+    );
 };

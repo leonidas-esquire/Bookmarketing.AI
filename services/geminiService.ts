@@ -261,14 +261,49 @@ export const generateContent = async (prompt: string, model: 'gemini-2.5-pro' | 
     return response.text;
 };
 
-export const analyzeAudience = async (manuscriptFile: File): Promise<any> => {
+export const generateMarketingCampaign = async (manuscriptFile: File): Promise<any> => {
     const ai = getGenAI();
     const manuscriptPart = await fileToGenerativePart(manuscriptFile);
 
     const prompt = `
-Act as an expert book marketing analyst. I have provided a manuscript file. Your task is to perform a deep analysis of the text content and generate a detailed "Ideal Reader Profile".
-The output must be a structured JSON object that adheres to the provided schema. Analyze the content deeply to provide insightful and specific details for each field.
-Finally, generate a set of targeted marketing copy designed to resonate with this specific reader profile and drive sales.
+ROLE: You are "Athena", a world-class AI marketing strategist and campaign architect with the capabilities of a full-service marketing agency. You have been tasked with creating a comprehensive, actionable, multi-million dollar marketing campaign for an author's book.
+
+OBJECTIVE: I have provided an author's complete book manuscript. Your task is to perform a deep, multi-faceted analysis and generate a complete go-to-market strategy and all associated marketing assets. The goal is to create a plan that could realistically help the author reach one million readers.
+
+TASK: Execute the following 4-step process. Your final output MUST be a single, large, and valid JSON object that strictly adheres to the provided schema. Do not include any explanatory text outside of the JSON structure. Be specific, insightful, and generate high-quality, ready-to-use content.
+
+**Step 1: Comprehensive Book Analysis**
+-   Deeply analyze the manuscript's content, themes, tone, style, and characters.
+-   Identify the precise genre and sub-genres.
+-   Profile the ideal target reader in extreme detail (demographics, psychographics, pain points, desires, media habits).
+-   Identify 3-5 key competitor books and articulate this book's unique selling proposition (USP) and differentiation strategy.
+-   Evaluate market opportunities, potential cultural sensitivities, and the book's overall commercial potential.
+
+**Step 2: Instant Campaign Architecture**
+-   Based on the analysis, design a multi-stage campaign architecture.
+-   Create an aggressive 24-hour launch plan to maximize initial sales velocity.
+-   Develop a 30-day plan to build momentum and gather reviews.
+-   Outline a 90-day viral expansion strategy focusing on organic growth.
+-   Create a 365-day "Million-Reader Roadmap" for long-term, sustained sales.
+-   Suggest a tiered budget allocation (e.g., Low, Medium, High) and key performance indicators (KPIs) to track success.
+-   Identify potential risks and suggest mitigation strategies.
+
+**Step 3: Multi-Channel Campaign Creation**
+-   Develop specific, actionable strategies for key marketing channels.
+-   For Amazon: Outline a strategy for keywords, categories, A+ content, and a sample AMS ad campaign structure.
+-   For Social Media: Create a 1-month content calendar for two key platforms (e.g., TikTok, Instagram), including post ideas, captions, and hashtags.
+-   For Email Marketing: Outline a 5-part email nurture sequence for new subscribers, from welcome to sales pitch.
+-   For Influencers: Suggest a profile for the ideal influencer and provide an outreach template.
+-   Provide a high-level content marketing/SEO strategy (e.g., blog post ideas that tie into the book's themes).
+
+**Step 4: Asset Generation and Implementation Guide**
+-   Generate a library of ready-to-use marketing copy.
+-   Write 3 compelling book blurbs (short, medium, long).
+-   Write 5 different ad copy hooks for paid social media.
+-   Provide visual asset specifications (e.g., "For Instagram, create a moody, cinematic carousel post using the following quote...").
+-   Write a script for a 30-second video trailer.
+-   Create a press release template.
+-   Outline a high-level implementation timeline, breaking down the first 30 days into weekly action steps.
 `;
     
     const response = await ai.models.generateContent({
@@ -277,62 +312,161 @@ Finally, generate a set of targeted marketing copy designed to resonate with thi
         config: {
             responseMimeType: "application/json",
             maxOutputTokens: 16384,
-            thinkingConfig: { thinkingBudget: 4096 },
+            thinkingConfig: { thinkingBudget: 8192 },
             responseSchema: {
                 type: Type.OBJECT,
                 properties: {
-                    demographics: {
+                    step1_bookAnalysis: {
                         type: Type.OBJECT,
                         properties: {
-                            ageRange: { type: Type.STRING, description: "e.g., 18-25, 35-45" },
-                            gender: { type: Type.STRING, description: "e.g., Primarily female, Skews male, All genders" },
-                            educationLevel: { type: Type.STRING, description: "e.g., High School, College Graduate, Post-graduate" },
-                            occupations: { type: Type.ARRAY, items: { type: Type.STRING }, description: "A list of 3-5 likely professions." }
+                            genreAndPositioning: { type: Type.STRING, description: "Detailed classification of genre, sub-genre, and market positioning statement." },
+                            targetAudienceProfile: { 
+                                type: Type.OBJECT,
+                                properties: {
+                                    summary: { type: Type.STRING },
+                                    demographics: { type: Type.STRING },
+                                    psychographics: { type: Type.STRING },
+                                    mediaHabits: { type: Type.STRING },
+                                }
+                            },
+                            competitiveAnalysis: {
+                                type: Type.ARRAY,
+                                items: {
+                                    type: Type.OBJECT,
+                                    properties: {
+                                        title: { type: Type.STRING },
+                                        author: { type: Type.STRING },
+                                        differentiation: { type: Type.STRING, description: "How this book is different and better." }
+                                    }
+                                }
+                            },
+                            uniqueSellingProposition: { type: Type.STRING, description: "A concise USP for the book." },
+                            marketOpportunity: { type: Type.STRING },
+                            sensitivityAnalysis: { type: Type.STRING, description: "Potential cultural or sensitivity issues and recommendations." },
+                            commercialPotential: { type: Type.STRING, description: "Evaluation of the book's sales potential." }
                         }
                     },
-                    psychographics: {
+                    step2_campaignArchitecture: {
                         type: Type.OBJECT,
                         properties: {
-                            coreValues: { type: Type.ARRAY, items: { type: Type.STRING }, description: "A list of core values like Adventure, Family, Justice." },
-                            hobbiesAndInterests: { type: Type.ARRAY, items: { type: Type.STRING }, description: "A list of hobbies like Hiking, Video games, Baking." },
-                            lifestyle: { type: Type.STRING, description: "e.g., Urban professional, Suburban parent, Digital nomad" },
-                            mediaConsumption: { type: Type.ARRAY, items: { type: Type.STRING }, description: "A list of media habits, e.g., 'Listens to true crime podcasts', 'Reads The New Yorker'." }
+                            launchPlan_24Hour: { type: Type.STRING, description: "Actionable plan for the first 24 hours of launch." },
+                            momentumPlan_30Day: { type: Type.STRING, description: "Strategy for the first 30 days." },
+                            viralPlan_90Day: { type: Type.STRING, description: "Strategy for days 31-90." },
+                            millionReaderRoadmap_365Day: { type: Type.STRING, description: "Long-term strategy for the first year." },
+                            budgetAllocation: { 
+                                type: Type.OBJECT,
+                                properties: {
+                                    low: { type: Type.STRING, description: "Recommendations for a low budget." },
+                                    medium: { type: Type.STRING, description: "Recommendations for a medium budget." },
+                                    high: { type: Type.STRING, description: "Recommendations for a high budget." },
+                                }
+                            },
+                            performanceMetrics: { type: Type.ARRAY, items: { type: Type.STRING }, description: "List of key KPIs to track." },
+                            riskAssessment: { type: Type.STRING, description: "Potential risks and mitigation strategies." }
                         }
                     },
-                    comparableTitles: {
-                        type: Type.ARRAY,
-                        items: {
-                            type: Type.OBJECT,
-                            properties: {
-                                title: { type: Type.STRING },
-                                author: { type: Type.STRING },
-                                reason: { type: Type.STRING, description: "A brief explanation of why this title is a good comparison." }
+                    step3_multiChannelCampaigns: {
+                        type: Type.OBJECT,
+                        properties: {
+                            amazonStrategy: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    keywords: { type: Type.ARRAY, items: { type: Type.STRING } },
+                                    categories: { type: Type.ARRAY, items: { type: Type.STRING } },
+                                    advertisingPlan: { type: Type.STRING, description: "A sample Amazon Ads campaign structure." }
+                                }
+                            },
+                            socialMediaCampaigns: {
+                                type: Type.ARRAY,
+                                items: {
+                                    type: Type.OBJECT,
+                                    properties: {
+                                        platform: { type: Type.STRING },
+                                        strategy: { type: Type.STRING },
+                                        contentCalendar_1Month: {
+                                            type: Type.ARRAY,
+                                            items: {
+                                                type: Type.OBJECT,
+                                                properties: {
+                                                    week: { type: Type.INTEGER },
+                                                    theme: { type: Type.STRING },
+                                                    postIdeas: { type: Type.ARRAY, items: { type: Type.STRING } },
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            emailMarketingSequence: {
+                                type: Type.ARRAY,
+                                description: "A sequence of emails for a new subscriber.",
+                                items: {
+                                    type: Type.OBJECT,
+                                    properties: {
+                                        day: { type: Type.INTEGER },
+                                        subject: { type: Type.STRING },
+                                        body: { type: Type.STRING }
+                                    }
+                                }
+                            },
+                            influencerStrategy: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    idealProfile: { type: Type.STRING },
+                                    outreachTemplate: { type: Type.STRING }
+                                }
+                            },
+                            contentMarketingStrategy: {
+                                type: Type.ARRAY,
+                                description: "List of blog post or content ideas.",
+                                items: {
+                                    type: Type.OBJECT,
+                                    properties: {
+                                        title: { type: Type.STRING },
+                                        description: { type: Type.STRING },
+                                    }
+                                }
                             }
                         }
                     },
-                    marketingHooks: {
-                        type: Type.ARRAY,
-                        items: {
-                            type: Type.OBJECT,
-                            properties: {
-                                hook: { type: Type.STRING, description: "A key emotional trigger or theme from the manuscript." },
-                                explanation: { type: Type.STRING, description: "A brief explanation of why this hook will be effective." }
-                            }
-                        }
-                    },
-                    targetedMarketingCopy: {
+                    step4_assetGeneration: {
                         type: Type.OBJECT,
-                        description: "Marketing copy specifically tailored to the ideal reader profile.",
                         properties: {
-                            facebookAdCopy: { type: Type.STRING, description: "A short, compelling ad copy for a Facebook campaign, targeting the ideal reader." },
-                            instagramPostCopy: { type: Type.STRING, description: "An engaging Instagram post caption. Include a call-to-action and suggest relevant hashtags." },
-                            emailSubjectLines: { type: Type.ARRAY, items: { type: Type.STRING }, description: "A list of 3-5 attention-grabbing email subject lines for a newsletter announcement." }
+                            copyLibrary: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    bookBlurbs: {
+                                        type: Type.OBJECT,
+                                        properties: {
+                                            short: { type: Type.STRING },
+                                            medium: { type: Type.STRING },
+                                            long: { type: Type.STRING },
+                                        }
+                                    },
+                                    adCopyHooks: { type: Type.ARRAY, items: { type: Type.STRING } },
+                                }
+                            },
+                            visualAssetGuidelines: { type: Type.STRING, description: "Guidelines and ideas for creating visual assets." },
+                            videoTrailerScript_30s: { type: Type.STRING, description: "A complete 30-second video script with scene descriptions." },
+                            pressReleaseTemplate: { type: Type.STRING, description: "A ready-to-use press release template." },
+                            implementationTimeline_30Day: {
+                                type: Type.ARRAY,
+                                items: {
+                                    type: Type.OBJECT,
+                                    properties: {
+                                        week: { type: Type.INTEGER },
+                                        focus: { type: Type.STRING },
+                                        actionSteps: { type: Type.ARRAY, items: { type: Type.STRING } },
+                                    }
+                                }
+                            }
                         }
                     }
                 }
             }
-        }
+        },
     });
+    
     return handleJsonResponse(response);
 };
 

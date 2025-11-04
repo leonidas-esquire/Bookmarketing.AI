@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { AudienceAnalyzer } from './AudienceAnalyzer';
+import { CampaignGenerator } from './AudienceAnalyzer';
 import { BookDistributor } from './BookDistributor';
 import { SalesAnalytics } from './SalesAnalytics';
 import { MarketingVideoCreator } from './MarketingVideoCreator';
@@ -12,7 +11,7 @@ interface LeftSidebarProps {
 }
 
 const tabs = [
-    { id: 'audience-analyzer', title: 'Audience Analyzer', icon: 'fa-users' },
+    { id: 'campaign-generator', title: 'Audience & Campaign Generator', icon: 'fa-brain' },
     { id: 'book-distributor', title: 'Book Distributor', icon: 'fa-rocket' },
     { id: 'sales-analytics', title: 'Sales Analytics', icon: 'fa-dollar-sign' },
     { id: 'marketing-video-creator', title: 'Marketing Video Creator', icon: 'fa-bullhorn' },
@@ -23,8 +22,8 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({ user, salesData }) => 
 
     const renderActiveTabContent = () => {
         switch (activeTab) {
-            case 'audience-analyzer':
-                return <AudienceAnalyzer />;
+            case 'campaign-generator':
+                return <CampaignGenerator />;
             case 'book-distributor':
                 return <BookDistributor />;
             case 'sales-analytics':

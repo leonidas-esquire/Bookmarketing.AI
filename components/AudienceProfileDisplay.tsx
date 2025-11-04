@@ -1,18 +1,28 @@
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
 
-interface ResultCardProps {
-    title: string;
-    icon: string;
-    children: React.ReactNode;
-}
+const Accordion: React.FC<{ title: string; icon: string; children: React.ReactNode; defaultOpen?: boolean }> = ({ title, icon, children, defaultOpen = false }) => {
+    const [isOpen, setIsOpen] = React.useState(defaultOpen);
+    return (
+        <div className="bg-gray-800/80 rounded-lg overflow-hidden border border-gray-700 backdrop-blur-sm">
+            <button onClick={() => setIsOpen(!isOpen)} className="w-full p-4 flex justify-between items-center text-left bg-gray-700/50 hover:bg-gray-600/50 transition-colors">
+                <h3 className="text-xl font-bold text-white flex items-center gap-3">
+                    <i className={`fas ${icon} w-6 text-center text-indigo-400`}></i>
+                    {title}
+                </h3>
+                <i className={`fas fa-chevron-down transform transition-transform ${isOpen ? 'rotate-180' : ''}`}></i>
+            </button>
+            {isOpen && <div className="p-6 space-y-6">{children}</div>}
+        </div>
+    )
+};
 
-const ResultCard: React.FC<ResultCardProps> = ({ title, icon, children }) => (
-    <div className="bg-gray-800 rounded-lg p-6 border border-gray-700 h-full">
-        <h3 className="text-xl font-bold text-indigo-300 mb-4 flex items-center">
-            <i className={`fas ${icon} mr-3 w-6 text-center`}></i>
-            {title}
-        </h3>
-        <div className="space-y-3 text-indigo-100">{children}</div>
+const InfoCard: React.FC<{ title: string; children: React.ReactNode; className?: string }> = ({ title, children, className }) => (
+    <div className={className}>
+        <h4 className="font-semibold text-lg text-indigo-300 mb-2">{title}</h4>
+        <div className="bg-gray-900/70 p-4 rounded-lg space-y-2 text-indigo-100 prose prose-sm prose-invert max-w-none prose-p:my-1 prose-ul:my-1 prose-li:my-0.5">
+            {children}
+        </div>
     </div>
 );
 
@@ -23,94 +33,88 @@ const Tag: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 );
 
 
-export const AudienceProfileDisplay: React.FC<{ result: any }> = ({ result }) => {
-    const { demographics, psychographics, comparableTitles, marketingHooks, targetedMarketingCopy } = result;
+export const CampaignDisplay: React.FC<{ plan: any }> = ({ plan }) => {
+    const { step1_bookAnalysis, step2_campaignArchitecture, step3_multiChannelCampaigns, step4_assetGeneration } = plan;
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <ResultCard title="Demographics" icon="fa-users">
-                <p><strong>Age Range:</strong> {demographics?.ageRange}</p>
-                <p><strong>Gender:</strong> {demographics?.gender}</p>
-                <p><strong>Education Level:</strong> {demographics?.educationLevel}</p>
-                <div>
-                    <strong>Potential Occupations:</strong>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                        {(demographics?.occupations || []).map((item: string, i: number) => <Tag key={i}>{item}</Tag>)}
-                    </div>
-                </div>
-            </ResultCard>
-
-            <ResultCard title="Psychographics & Interests" icon="fa-heart">
-                 <div>
-                    <strong>Core Values:</strong>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                        {(psychographics?.coreValues || []).map((item: string, i: number) => <Tag key={i}>{item}</Tag>)}
-                    </div>
-                </div>
-                <div>
-                    <strong>Hobbies & Interests:</strong>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                        {(psychographics?.hobbiesAndInterests || []).map((item: string, i: number) => <Tag key={i}>{item}</Tag>)}
-                    </div>
-                </div>
-                 <p><strong>Lifestyle:</strong> {psychographics?.lifestyle}</p>
-            </ResultCard>
-
-             <div className="lg:col-span-2">
-                <ResultCard title="Comparable Titles" icon="fa-book">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {(comparableTitles || []).map((item: any, i: number) => (
-                             <div key={i} className="bg-gray-700 p-4 rounded-lg">
-                                <h4 className="font-bold text-white">{item.title}</h4>
-                                <p className="text-sm text-indigo-300 mb-2">by {item.author}</p>
-                                <p className="text-sm text-indigo-200 italic">"{item.reason}"</p>
+        <div className="space-y-4 animate-fade-in">
+            <Accordion title="Step 1: Comprehensive Book Analysis" icon="fa-search" defaultOpen>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <InfoCard title="Genre & Market Positioning"><ReactMarkdown>{step1_bookAnalysis?.genreAndPositioning || ''}</ReactMarkdown></InfoCard>
+                    <InfoCard title="Unique Selling Proposition"><p className="text-lg italic">"{step1_bookAnalysis?.uniqueSellingProposition}"</p></InfoCard>
+                    <InfoCard title="Target Audience Summary" className="lg:col-span-2"><ReactMarkdown>{step1_bookAnalysis?.targetAudienceProfile?.summary || ''}</ReactMarkdown></InfoCard>
+                    <InfoCard title="Competitive Analysis">
+                        {(step1_bookAnalysis?.competitiveAnalysis || []).map((comp: any, i:number) => (
+                            <div key={i} className="py-2 border-b border-gray-700 last:border-b-0">
+                                <p className="font-bold">{comp.title} <span className="font-normal text-gray-400">by {comp.author}</span></p>
+                                <p className="text-xs text-indigo-300">Differentiation: <span className="text-indigo-100">{comp.differentiation}</span></p>
                             </div>
                         ))}
-                    </div>
-                </ResultCard>
-            </div>
+                    </InfoCard>
+                    <InfoCard title="Commercial Potential"><ReactMarkdown>{step1_bookAnalysis?.commercialPotential || ''}</ReactMarkdown></InfoCard>
+                </div>
+            </Accordion>
             
-            <div className="lg:col-span-2">
-                 <ResultCard title="Key Marketing Hooks" icon="fa-bullhorn">
-                    <ul className="space-y-3">
-                        {(marketingHooks || []).map((item: any, i: number) => (
-                             <li key={i} className="bg-gray-700 p-4 rounded-lg">
-                                <p className="font-bold text-white mb-1">{item.hook}</p>
-                                <p className="text-sm text-indigo-200">{item.explanation}</p>
-                            </li>
-                        ))}
-                    </ul>
-                </ResultCard>
-            </div>
-
-            {targetedMarketingCopy && (
-                <div className="lg:col-span-2">
-                    <ResultCard title="Targeted Marketing Copy" icon="fa-bullseye">
-                        <div className="space-y-6">
-                            <div>
-                                <h4 className="font-semibold text-indigo-200 mb-2">Facebook Ad Copy</h4>
-                                <div className="bg-gray-700 p-4 rounded-lg text-indigo-100 whitespace-pre-wrap">
-                                    {targetedMarketingCopy.facebookAdCopy}
-                                </div>
-                            </div>
-                            <div>
-                                <h4 className="font-semibold text-indigo-200 mb-2">Instagram Post</h4>
-                                <div className="bg-gray-700 p-4 rounded-lg text-indigo-100 whitespace-pre-wrap">
-                                    {targetedMarketingCopy.instagramPostCopy}
-                                </div>
-                            </div>
-                             <div>
-                                <h4 className="font-semibold text-indigo-200 mb-2">Email Subject Lines</h4>
-                                <ul className="list-disc list-inside space-y-2">
-                                    {(targetedMarketingCopy.emailSubjectLines || []).map((line: string, i: number) => (
-                                        <li key={i} className="bg-gray-700 p-2 rounded-md">{line}</li>
-                                    ))}
-                                </ul>
-                            </div>
-                        </div>
-                    </ResultCard>
+            <Accordion title="Step 2: Campaign Architecture" icon="fa-sitemap">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <InfoCard title="24-Hour Launch Plan"><ReactMarkdown>{step2_campaignArchitecture?.launchPlan_24Hour}</ReactMarkdown></InfoCard>
+                    <InfoCard title="30-Day Momentum Plan"><ReactMarkdown>{step2_campaignArchitecture?.momentumPlan_30Day}</ReactMarkdown></InfoCard>
+                    <InfoCard title="90-Day Viral Expansion Plan" className="md:col-span-2"><ReactMarkdown>{step2_campaignArchitecture?.viralPlan_90Day}</ReactMarkdown></InfoCard>
+                    <InfoCard title="365-Day Million-Reader Roadmap" className="md:col-span-2"><ReactMarkdown>{step2_campaignArchitecture?.millionReaderRoadmap_365Day}</ReactMarkdown></InfoCard>
                 </div>
-            )}
+            </Accordion>
+
+            <Accordion title="Step 3: Multi-Channel Strategy" icon="fa-share-alt">
+                <InfoCard title="Amazon Optimization Strategy">
+                    <p><strong>Keywords:</strong></p>
+                    <div className="flex flex-wrap gap-2">
+                        {(step3_multiChannelCampaigns?.amazonStrategy?.keywords || []).map((kw: string, i:number) => <Tag key={i}>{kw}</Tag>)}
+                    </div>
+                     <p className="mt-4"><strong>Categories:</strong></p>
+                    <div className="flex flex-wrap gap-2">
+                         {(step3_multiChannelCampaigns?.amazonStrategy?.categories || []).map((cat: string, i:number) => <Tag key={i}>{cat}</Tag>)}
+                    </div>
+                </InfoCard>
+                 {(step3_multiChannelCampaigns?.socialMediaCampaigns || []).map((sm: any, i:number) => (
+                    <InfoCard title={`Social Media: ${sm.platform} Strategy`} key={i}>
+                        <ReactMarkdown>{sm.strategy}</ReactMarkdown>
+                    </InfoCard>
+                ))}
+                 <InfoCard title="Email Marketing Nurture Sequence">
+                    {(step3_multiChannelCampaigns?.emailMarketingSequence || []).map((email: any, i:number) => (
+                         <div key={i} className="py-2 border-b border-gray-700 last:border-b-0">
+                            <p><strong>Day {email.day}:</strong> {email.subject}</p>
+                        </div>
+                    ))}
+                 </InfoCard>
+            </Accordion>
+            
+            <Accordion title="Step 4: Asset Generation & Implementation" icon="fa-file-alt">
+                <InfoCard title="Copy Library: Book Blurbs">
+                    <h5 className="font-bold text-indigo-400">Short</h5>
+                    <p>{step4_assetGeneration?.copyLibrary?.bookBlurbs?.short}</p>
+                    <h5 className="font-bold text-indigo-400 mt-2">Medium</h5>
+                    <p>{step4_assetGeneration?.copyLibrary?.bookBlurbs?.medium}</p>
+                </InfoCard>
+                 <InfoCard title="Copy Library: Ad Hooks">
+                    <ul className="list-disc list-inside">
+                        {(step4_assetGeneration?.copyLibrary?.adCopyHooks || []).map((hook: string, i:number) => <li key={i}>{hook}</li>)}
+                    </ul>
+                </InfoCard>
+                <InfoCard title="30-Second Video Trailer Script">
+                    <ReactMarkdown>{step4_assetGeneration?.videoTrailerScript_30s}</ReactMarkdown>
+                </InfoCard>
+                <InfoCard title="First 30 Days Implementation Timeline">
+                    {(step4_assetGeneration?.implementationTimeline_30Day || []).map((week: any, i:number) => (
+                         <div key={i} className="py-2">
+                            <p className="font-bold">Week {week.week}: {week.focus}</p>
+                            <ul className="list-disc list-inside pl-4">
+                                {(week.actionSteps || []).map((step: string, j:number) => <li key={j}>{step}</li>)}
+                            </ul>
+                        </div>
+                    ))}
+                </InfoCard>
+            </Accordion>
         </div>
     );
 };
