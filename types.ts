@@ -24,6 +24,13 @@ export interface SalesRecord {
   country: string;
 }
 
+export interface SalesPageConfig {
+    price: number;
+    currency: string;
+    pitch: string;
+    isActive: boolean;
+}
+
 
 // Fix: Centralized the AIStudio interface and global window declaration
 // to resolve a duplicate declaration error. This is now the single source of truth.

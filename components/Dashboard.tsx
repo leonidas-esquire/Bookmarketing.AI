@@ -15,6 +15,8 @@ const tools: Tool[] = [
   { id: 'marketing-video-creator', title: 'Marketing Video Creator', description: 'Turn your manuscript into a complete video marketing campaign plan.', icon: 'fa-bullhorn' },
   // FIX: Corrected a typo in the object definition for the Book Distributor tool.
   { id: 'book-distributor', title: 'Book Distributor', description: 'Prepare a distribution kit for major marketing channels.', icon: 'fa-rocket' },
+  { id: 'direct-sales-channel', title: 'Direct Sales Channel', description: 'Sell your book directly with a simulated Stripe checkout.', icon: 'fa-credit-card' },
+  // FIX: Corrected a typo in the object property `id:t` to `id`.
   { id: 'funnel-builder', title: 'Funnel Builder AI', description: 'Generate a complete JSON sales funnel plan from your manuscript.', icon: 'fa-sitemap' },
   { id: 'cover-analyzer', title: 'Cover Feedback AI', description: 'Get AI-powered feedback on your book cover\'s marketability.', icon: 'fa-search-plus' },
   { id: 'copywriter', title: 'Marketing Copywriter', description: 'Generate blurbs, social media posts, and ad copy in seconds.', icon: 'fa-pencil-alt' },

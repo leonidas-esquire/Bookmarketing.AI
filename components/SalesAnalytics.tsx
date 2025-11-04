@@ -1,61 +1,68 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { User, SalesRecord } from '../types';
-import { generateSalesData } from '../services/salesDataService';
 import { LoadingSpinner } from './LoadingSpinner';
 import { StatCard } from './StatCard';
 import { SalesChart } from './SalesChart';
 
 interface SalesAnalyticsProps {
   user: User;
+  salesData: SalesRecord[];
 }
 
 const timeframes = [
     { label: 'Last 7 Days', value: 7 },
     { label: 'Last 30 Days', value: 30 },
     { label: 'Last 90 Days', value: 90 },
-    { label: 'All Time (1 Year)', value: 365 },
+    { label: 'All Time', value: 365 },
 ];
 
-export const SalesAnalytics: React.FC<SalesAnalyticsProps> = ({ user }) => {
+export const SalesAnalytics: React.FC<SalesAnalyticsProps> = ({ user, salesData }) => {
     const [timeframe, setTimeframe] = useState<number>(30);
-    const [salesData, setSalesData] = useState<SalesRecord[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+
+    const filteredData = useMemo(() => {
+        if (timeframe === 365) return salesData; // 'All Time'
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(endDate.getDate() - timeframe);
+        return salesData.filter(record => {
+            const recordDate = new Date(record.date);
+            return recordDate >= startDate && recordDate <= endDate;
+        });
+    }, [salesData, timeframe]);
 
     useEffect(() => {
         setIsLoading(true);
-        // Simulate API call
-        setTimeout(() => {
-            const data = generateSalesData(user.bookTitle, user.genre, timeframe);
-            setSalesData(data);
-            setIsLoading(false);
-        }, 800);
-    }, [timeframe, user.bookTitle, user.genre]);
+        // Simulate loading when data/timeframe changes
+        const timer = setTimeout(() => setIsLoading(false), 300);
+        return () => clearTimeout(timer);
+    }, [filteredData]);
     
     const kpis = useMemo(() => {
-        if (!salesData.length) return { totalRevenue: 0, unitsSold: 0, avgDailySales: 0, topRetailer: 'N/A' };
+        if (!filteredData.length) return { totalRevenue: 0, unitsSold: 0, avgDailySales: 0, topRetailer: 'N/A' };
         
-        const totalRevenue = salesData.reduce((sum, record) => sum + record.revenue, 0);
-        const unitsSold = salesData.reduce((sum, record) => sum + record.unitsSold, 0);
+        const totalRevenue = filteredData.reduce((sum, record) => sum + record.revenue, 0);
+        const unitsSold = filteredData.reduce((sum, record) => sum + record.unitsSold, 0);
         
         const retailerSales: { [key: string]: number } = {};
-        salesData.forEach(record => {
+        filteredData.forEach(record => {
             retailerSales[record.retailer] = (retailerSales[record.retailer] || 0) + record.unitsSold;
         });
         const topRetailer = Object.keys(retailerSales).length ? Object.entries(retailerSales).reduce((a, b) => a[1] > b[1] ? a : b)[0] : 'N/A';
 
-        const days = new Set(salesData.map(r => r.date)).size;
+        const days = new Set(filteredData.map(r => r.date)).size;
         const avgDailySales = days > 0 ? unitsSold / days : 0;
 
         return { totalRevenue, unitsSold, avgDailySales, topRetailer };
-    }, [salesData]);
+    }, [filteredData]);
     
     const aggregatedData = useMemo(() => {
         const salesByDate: { [date: string]: number } = {};
         const salesByRetailer: { [retailer: string]: number } = {};
         const salesByCountry: { [country: string]: number } = {};
         
-        salesData.forEach(record => {
+        filteredData.forEach(record => {
             salesByDate[record.date] = (salesByDate[record.date] || 0) + record.unitsSold;
             salesByRetailer[record.retailer] = (salesByRetailer[record.retailer] || 0) + record.unitsSold;
             salesByCountry[record.country] = (salesByCountry[record.country] || 0) + record.unitsSold;
@@ -66,7 +73,7 @@ export const SalesAnalytics: React.FC<SalesAnalyticsProps> = ({ user }) => {
         const countryData = Object.entries(salesByCountry).sort((a,b) => b[1] - a[1]).slice(0, 5);
         
         return { chartData, retailerData, countryData };
-    }, [salesData]);
+    }, [filteredData]);
 
     return (
         <div className="max-w-7xl mx-auto p-4 animate-fade-in">
@@ -108,7 +115,7 @@ export const SalesAnalytics: React.FC<SalesAnalyticsProps> = ({ user }) => {
                         <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
                             <h3 className="text-xl font-bold text-white mb-4">Sales by Retailer</h3>
                             <div className="space-y-3">
-                                {aggregatedData.retailerData.map(([name, units]) => (
+                                {aggregatedData.retailerData.length > 0 ? aggregatedData.retailerData.map(([name, units]) => (
                                     <div key={name}>
                                         <div className="flex justify-between text-sm mb-1">
                                             <span className="font-semibold text-indigo-200">{name}</span>
@@ -118,18 +125,18 @@ export const SalesAnalytics: React.FC<SalesAnalyticsProps> = ({ user }) => {
                                             <div className="bg-indigo-500 h-2.5 rounded-full" style={{ width: `${(units / aggregatedData.retailerData[0][1]) * 100}%` }}></div>
                                         </div>
                                     </div>
-                                ))}
+                                )) : <p className="text-gray-500">No sales data for this period.</p>}
                             </div>
                         </div>
                         <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
                             <h3 className="text-xl font-bold text-white mb-4">Top 5 Countries</h3>
                             <ul className="space-y-3">
-                                {aggregatedData.countryData.map(([name, units]) => (
+                                {aggregatedData.countryData.length > 0 ? aggregatedData.countryData.map(([name, units]) => (
                                     <li key={name} className="flex justify-between items-center bg-gray-700 p-2 rounded-md">
                                         <span className="font-semibold text-indigo-200">{name}</span>
                                         <span className="font-bold text-white">{units.toLocaleString()} units</span>
                                     </li>
-                                ))}
+                                )) : <p className="text-gray-500">No sales data for this period.</p>}
                             </ul>
                         </div>
                     </div>
