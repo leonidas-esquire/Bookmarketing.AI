@@ -34,14 +34,14 @@ const Tag: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 );
 
 
-export const CampaignDisplay: React.FC<{ plan: any, onReset: () => void }> = ({ plan, onReset }) => {
+export const CampaignDisplay: React.FC<{ plan: any, onReset: () => void, manuscriptTitle: string }> = ({ plan, onReset, manuscriptTitle }) => {
     const { step1_bookAnalysis, step2_campaignArchitecture, step3_multiChannelCampaigns, step4_assetGeneration } = plan;
     const [isExporting, setIsExporting] = useState(false);
 
     const handleExport = async () => {
         setIsExporting(true);
         try {
-            await exportCampaignToPDF(plan);
+            await exportCampaignToPDF(plan, manuscriptTitle);
         } catch (e) {
             console.error("PDF Export failed", e);
             alert("An error occurred while exporting the PDF. Please check the console for details.");

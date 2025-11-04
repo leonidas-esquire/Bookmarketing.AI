@@ -38,6 +38,7 @@ const Stepper: React.FC<{ currentStep: number }> = ({ currentStep }) => {
 
 export const CampaignGenerator: React.FC = () => {
     const [manuscriptFile, setManuscriptFile] = useState<File | null>(null);
+    const [manuscriptTitle, setManuscriptTitle] = useState('');
     const [campaignPlan, setCampaignPlan] = useState<any | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -49,9 +50,16 @@ export const CampaignGenerator: React.FC = () => {
         setManuscriptFile(file);
     }, []);
 
+    const handleReset = () => {
+        setCampaignPlan(null);
+        setManuscriptFile(null);
+        setManuscriptTitle('');
+        setError(null);
+    };
+
     const handleGenerate = async () => {
-        if (!manuscriptFile) {
-            setError('Please upload your manuscript first.');
+        if (!manuscriptFile || !manuscriptTitle) {
+            setError('Please upload your manuscript and provide a title.');
             return;
         }
         setIsLoading(true);
@@ -104,7 +112,7 @@ export const CampaignGenerator: React.FC = () => {
     if (campaignPlan) {
         return (
             <div>
-                <CampaignDisplay plan={campaignPlan} onReset={() => setCampaignPlan(null)} />
+                <CampaignDisplay plan={campaignPlan} onReset={handleReset} manuscriptTitle={manuscriptTitle} />
             </div>
         )
     }
@@ -116,12 +124,27 @@ export const CampaignGenerator: React.FC = () => {
                 <p className="text-indigo-200">Upload your manuscript to build a complete marketing strategy.</p>
             </div>
 
-            <div className="bg-gray-800 p-6 rounded-lg shadow-lg mb-8">
+            <div className="bg-gray-800 p-6 rounded-lg shadow-lg mb-8 space-y-4">
                 <FileUploader onFileSelect={(file) => handleFileSelect(file)} accept=".pdf,.md,.txt,.docx" label="Upload Manuscript (.pdf, .md, .txt, .docx)" />
+                
+                {manuscriptFile && (
+                    <div className="animate-fade-in">
+                        <label htmlFor="manuscriptTitle" className="block text-sm font-medium text-indigo-200 mb-1">Manuscript Title</label>
+                        <input
+                            type="text"
+                            id="manuscriptTitle"
+                            value={manuscriptTitle}
+                            onChange={(e) => setManuscriptTitle(e.target.value)}
+                            placeholder="e.g., The Crimson Cipher"
+                            className="w-full p-3 bg-gray-700 border border-gray-600 rounded-md focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                        />
+                    </div>
+                )}
+
                 <button
                     onClick={handleGenerate}
-                    disabled={isLoading || !manuscriptFile}
-                    className="w-full mt-4 px-6 py-3 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 transition-colors disabled:bg-indigo-800 disabled:cursor-not-allowed"
+                    disabled={isLoading || !manuscriptFile || !manuscriptTitle}
+                    className="w-full px-6 py-3 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 transition-colors disabled:bg-indigo-800 disabled:cursor-not-allowed"
                 >
                     Generate Full Campaign
                 </button>

@@ -15,11 +15,13 @@ class PdfBuilder {
     doc: jsPDF;
     cursorY: number;
     plan: any;
+    bookTitle: string;
 
-    constructor(plan: any) {
+    constructor(plan: any, bookTitle: string) {
         this.doc = new jsPDF('p', 'mm', 'a4');
         this.cursorY = MARGIN;
         this.plan = plan;
+        this.bookTitle = bookTitle || "Untitled Book";
     }
     
     // Utility to check if a new page is needed before adding content
@@ -36,7 +38,7 @@ class PdfBuilder {
         this.doc.setFontSize(FONT_SIZES.small);
         this.doc.setTextColor(LIGHT_TEXT_COLOR);
         this.doc.text('Bookmarketing.AI Campaign Plan', MARGIN, 10);
-        this.doc.text(this.plan.step1_bookAnalysis?.genreAndPositioning.split(':')[0] ?? 'Marketing Plan', PAGE_WIDTH - MARGIN, 10, { align: 'right' });
+        this.doc.text(this.bookTitle, PAGE_WIDTH - MARGIN, 10, { align: 'right' });
         this.doc.setDrawColor(LIGHT_TEXT_COLOR);
         this.doc.line(MARGIN, 12, PAGE_WIDTH - MARGIN, 12);
     }
@@ -101,12 +103,11 @@ class PdfBuilder {
         this.addStep4();
         this.addFooters();
         
-        const bookTitle = this.plan?.step1_bookAnalysis?.genreAndPositioning?.match(/"(.*?)"/)?.[1] || "Untitled";
-        this.doc.save(`BookmarketingAI_Plan_${bookTitle.replace(/[^a-z0-9]/gi, '_')}.pdf`);
+        this.doc.save(`BookmarketingAI_Plan_${this.bookTitle.replace(/[^a-z0-9]/gi, '_')}.pdf`);
     }
 
     addTitlePage() {
-        const bookTitle = this.plan?.step1_bookAnalysis?.genreAndPositioning?.match(/"(.*?)"/)?.[1] || "Untitled Book";
+        const bookTitle = this.bookTitle;
         this.doc.setFillColor(PRIMARY_COLOR);
         this.doc.rect(0, 0, PAGE_WIDTH, PAGE_HEIGHT, 'F');
         
@@ -255,9 +256,9 @@ class PdfBuilder {
 }
 
 // The main function exported to be used in the component
-export const exportCampaignToPDF = (plan: any): Promise<void> => {
+export const exportCampaignToPDF = (plan: any, manuscriptTitle: string): Promise<void> => {
     return new Promise((resolve) => {
-        const builder = new PdfBuilder(plan);
+        const builder = new PdfBuilder(plan, manuscriptTitle);
         builder.build();
         resolve();
     });
