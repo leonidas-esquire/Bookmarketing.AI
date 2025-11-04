@@ -40,6 +40,8 @@ export const MarketingCopywriter: React.FC = () => {
     }
   };
 
+  const getCleanTitle = (type: CopyType) => copyPrompts[type].title.replace(/\s\(.*\)/, '');
+
   return (
     <div className="max-w-4xl mx-auto p-4 animate-fade-in">
       <div className="text-center mb-8">
@@ -54,28 +56,37 @@ export const MarketingCopywriter: React.FC = () => {
           placeholder="Paste a chapter summary, character description, or key scene here..."
           className="w-full p-3 bg-gray-700 border border-gray-600 rounded-md mb-4 focus:ring-2 focus:ring-indigo-500 focus:outline-none h-48"
         />
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-grow">
-            <label htmlFor="copy-type" className="block text-sm font-medium text-indigo-200 mb-1">Copy Type</label>
-            <select
-              id="copy-type"
-              value={copyType}
-              onChange={(e) => setCopyType(e.target.value as CopyType)}
-              className="w-full p-3 bg-gray-700 border border-gray-600 rounded-md focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-            >
-              <option value="blurb">{copyPrompts.blurb.title}</option>
-              <option value="social">{copyPrompts.social.title}</option>
-              <option value="ad">{copyPrompts.ad.title}</option>
-            </select>
+        
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-indigo-200 mb-2">Select Copy Type</label>
+          <div className="flex border-b border-gray-700" role="tablist" aria-label="Copy Types">
+            {(Object.keys(copyPrompts) as CopyType[]).map(key => (
+              <button
+                key={key}
+                id={`tab-${key}`}
+                role="tab"
+                aria-selected={copyType === key}
+                aria-controls={`panel-${copyType}`}
+                onClick={() => setCopyType(key)}
+                className={`px-4 py-2 font-semibold text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-indigo-500 rounded-t-md ${
+                  copyType === key
+                    ? 'border-b-2 border-indigo-500 text-white bg-gray-700/50'
+                    : 'text-gray-400 hover:text-white border-b-2 border-transparent'
+                }`}
+              >
+                {getCleanTitle(key)}
+              </button>
+            ))}
           </div>
-          <button
-            onClick={handleGenerate}
-            disabled={isLoading}
-            className="w-full sm:w-auto self-end px-6 py-3 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 transition-colors disabled:bg-indigo-800 disabled:cursor-not-allowed"
-          >
-            {isLoading ? 'Writing...' : 'Generate Copy'}
-          </button>
         </div>
+        
+        <button
+          onClick={handleGenerate}
+          disabled={isLoading}
+          className="w-full px-6 py-3 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 transition-colors disabled:bg-indigo-800 disabled:cursor-not-allowed"
+        >
+          {isLoading ? 'Writing...' : `Generate ${getCleanTitle(copyType)}`}
+        </button>
       </div>
       
       {error && <p className="text-red-400 mt-4 text-center">{error}</p>}
@@ -83,7 +94,7 @@ export const MarketingCopywriter: React.FC = () => {
       <div className="mt-8">
         {isLoading && <LoadingSpinner message="Our AI copywriter is on it..." />}
         {result && (
-          <div className="bg-gray-800 p-6 rounded-lg prose prose-invert prose-p:text-indigo-100 prose-headings:text-white max-w-none">
+          <div className="bg-gray-800 p-6 rounded-lg prose prose-invert prose-p:text-indigo-100 prose-headings:text-white max-w-none" id={`panel-${copyType}`} role="tabpanel" aria-labelledby={`tab-${copyType}`}>
             <ReactMarkdown>{result}</ReactMarkdown>
           </div>
         )}
