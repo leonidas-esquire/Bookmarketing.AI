@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, GenerateContentResponse, Modality, Chat, Type } from "@google/genai";
 
 const getGenAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY as string });
@@ -12,6 +11,81 @@ const fileToGenerativePart = async (file: File) => {
     return {
       inlineData: { data: await base64EncodedDataPromise, mimeType: file.type },
     };
+};
+
+// Helper to extract and parse JSON from a string that might be wrapped in markdown or have leading/trailing text.
+const extractAndParseJson = (text: string) => {
+    // Look for a JSON code block or a raw JSON object/array
+    const jsonRegex = /```json\s*([\s\S]*?)\s*```|({[\s\S]*}|\[[\s\S]*])/;
+    const match = text.match(jsonRegex);
+
+    if (!match) {
+        // Fallback for cases where regex might fail: find first '{' or '[' and last '}' or ']'
+        const firstBrace = text.indexOf('{');
+        const firstBracket = text.indexOf('[');
+        let startIndex = -1;
+
+        if (firstBrace === -1 && firstBracket === -1) {
+             const errorMessage = `The AI model returned a text response that could not be parsed into the expected JSON format. This can happen if the request was blocked by safety filters or if the prompt was too ambiguous. Please review your input and try again.\n\nModel's response:\n"${text.substring(0, 300)}${text.length > 300 ? '...' : ''}"`;
+             throw new Error(errorMessage);
+        }
+        
+        if (firstBrace !== -1 && firstBracket !== -1) {
+            startIndex = Math.min(firstBrace, firstBracket);
+        } else {
+            startIndex = firstBrace !== -1 ? firstBrace : firstBracket;
+        }
+
+        const lastBrace = text.lastIndexOf('}');
+        const lastBracket = text.lastIndexOf(']');
+        const endIndex = Math.max(lastBrace, lastBracket);
+        
+        if(startIndex > -1 && endIndex > -1 && endIndex > startIndex) {
+            const potentialJson = text.substring(startIndex, endIndex + 1);
+            try {
+                return JSON.parse(potentialJson);
+            } catch (e: any) {
+                 // If fallback fails, throw a more specific error
+                throw new Error(`Failed to parse extracted JSON from response. Raw response might be malformed. Error: ${e.message}`);
+            }
+        }
+         const genericErrorMessage = `Could not find a valid JSON object or array in the response. The AI's response started with a '{' or '[' but a complete object could not be extracted.\n\nModel's response:\n"${text.substring(0, 300)}${text.length > 300 ? '...' : ''}"`;
+        throw new Error(genericErrorMessage);
+    }
+    // If it's a markdown block, use the captured group. Otherwise, use the full match.
+    const jsonString = match[1] || match[0];
+    
+    try {
+        return JSON.parse(jsonString);
+    } catch (e: any) {
+        console.error("Failed to parse JSON string:", jsonString);
+        throw new Error(`JSON Parsing Error: ${e.message}. The AI's response might be malformed.`);
+    }
+};
+
+const handleJsonResponse = (response: GenerateContentResponse) => {
+    if (!response.candidates || response.candidates.length === 0) {
+        const blockReason = response.promptFeedback?.blockReason;
+        const safetyRatings = response.promptFeedback?.safetyRatings;
+        let errorMessage = "The AI model did not return a response, which may be due to the safety policy.";
+        if (blockReason) {
+            errorMessage += ` Reason: ${blockReason}.`;
+        }
+        if (safetyRatings && safetyRatings.length > 0) {
+            const problematicRatings = safetyRatings.filter(r => r.probability !== 'NEGLIGIBLE' && r.probability !== 'LOW');
+            if(problematicRatings.length > 0) {
+                 errorMessage += ` Details: ${problematicRatings.map(r => `${r.category} was rated ${r.probability}`).join(', ')}.`;
+            }
+        }
+         errorMessage += " Please try modifying your input or uploaded file.";
+        throw new Error(errorMessage);
+    }
+    
+    const jsonText = response.text;
+    if (!jsonText) {
+        throw new Error("Received an empty text response from the AI model. The content might have been blocked.");
+    }
+    return extractAndParseJson(jsonText);
 };
 
 export const generateImage = async (prompt: string, aspectRatio: string): Promise<string> => {
@@ -208,8 +282,7 @@ Finally, generate a set of targeted marketing copy designed to resonate with thi
             }
         }
     });
-    const jsonText = response.text.trim();
-    return JSON.parse(jsonText);
+    return handleJsonResponse(response);
 };
 
 export const researchWithGoogle = async (prompt: string): Promise<{ text: string, sources: any[] }> => {
@@ -350,9 +423,8 @@ ${manuscriptText}
             }
         },
     });
-
-    const jsonText = response.text.trim();
-    return JSON.parse(jsonText);
+    
+    return handleJsonResponse(response);
 };
 
 export const generateWebsitePlan = async (pdfFile: File): Promise<any> => {
@@ -436,8 +508,7 @@ The output must be a JSON object conforming to the provided schema.
         },
     });
 
-    const jsonText = response.text.trim();
-    return JSON.parse(jsonText);
+    return handleJsonResponse(response);
 };
 
 export const generateSalesFunnel = async (manuscriptFile: File): Promise<any> => {
@@ -545,8 +616,7 @@ All generated copy (headlines, emails, ads) must be persuasive, emotionally reso
         }
     });
 
-    const jsonText = response.text.trim();
-    return JSON.parse(jsonText);
+    return handleJsonResponse(response);
 };
 
 

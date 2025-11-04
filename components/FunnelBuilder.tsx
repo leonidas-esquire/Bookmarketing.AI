@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import { generateSalesFunnel } from '../services/geminiService';
 import { FileUploader } from './FileUploader';
@@ -52,7 +51,7 @@ export const FunnelBuilder: React.FC = () => {
                     </div>
 
                     <div className="bg-gray-800 p-6 rounded-lg shadow-lg mb-8">
-                        <FileUploader onFileSelect={(file) => handleFileSelect(file)} accept=".pdf,.docx,.epub,.md,.txt" label="Upload Manuscript (.pdf, .docx, .epub, .md, .txt)" />
+                        <FileUploader onFileSelect={(file) => handleFileSelect(file)} accept=".pdf,.md,.txt" label="Upload Manuscript (.pdf, .md, .txt)" />
                         <button
                             onClick={handleGenerate}
                             disabled={isLoading || !manuscriptFile}
