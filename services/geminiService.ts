@@ -678,12 +678,14 @@ All generated copy (headlines, emails, ads) must be persuasive, emotionally reso
 
 export const generateCompleteVideoMarketingPlan = async (formData: any): Promise<any> => {
     const ai = getGenAI();
-    const { manuscriptText, metadata, authorGoal, platformTargets, tonePreference } = formData;
+    const { manuscriptFile, metadata, authorGoal, platformTargets, tonePreference } = formData;
+
+    const manuscriptPart = await fileToGenerativePart(manuscriptFile);
 
     const prompt = `
     ROLE: You are a senior product designer + AI workflow architect specializing in turning long-form text (like book manuscripts) into high-converting marketing videos for authors.
 
-    OBJECTIVE: Design a complete, end-to-end Marketing Video Creator plan. Take the uploaded manuscript excerpt and author-provided metadata, and output a ready-to-use marketing video asset plan as a comprehensive JSON object.
+    OBJECTIVE: Design a complete, end-to-end Marketing Video Creator plan. I have provided a manuscript file and author-provided metadata. Your output should be a ready-to-use marketing video asset plan as a comprehensive JSON object.
 
     METADATA & GOALS:
     - Book Title: ${metadata.title}
@@ -695,13 +697,8 @@ export const generateCompleteVideoMarketingPlan = async (formData: any): Promise
     - Target Platforms: ${platformTargets.join(', ')}
     - Desired Tone/Style: ${tonePreference}
 
-    MANUSCRIPT EXCERPT:
-    ---
-    ${manuscriptText}
-    ---
-
     TASK:
-    1.  **Analyze Manuscript:** Deeply analyze the manuscript to extract core themes, the book's promise, stakes, conflict, transformation, and key emotional hooks. Identify the ideal reader avatar and their pain points/desires. Pull out 5-10 standout quotes.
+    1.  **Analyze Manuscript:** Deeply analyze the provided manuscript file to extract core themes, the book's promise, stakes, conflict, transformation, and key emotional hooks. Identify the ideal reader avatar and their pain points/desires. Pull out 5-10 standout quotes.
     2.  **Generate Core Video Concept:** Create a "core" hero video concept. This includes 3-5 hook line options, a full script (30-60s variant) with narration and on-screen text cues, and CTA options tailored to the author's goal.
     3.  **Generate Shot List:** Create a scene-by-scene visual direction breakdown for the core script, including A-roll and B-roll suggestions, pacing notes, and text overlay guidance.
     4.  **Generate Derivative Micro-Videos:** Based on the analysis, generate 5 simple, distinct micro-video ideas (e.g., quote videos, theme spotlights) that can be quickly produced. For each, provide a brief concept and the text/quote to use.
@@ -712,7 +709,7 @@ export const generateCompleteVideoMarketingPlan = async (formData: any): Promise
 
     const response = await ai.models.generateContent({
         model: 'gemini-2.5-pro',
-        contents: prompt,
+        contents: { parts: [{ text: prompt }, manuscriptPart] },
         config: {
             responseMimeType: "application/json",
             maxOutputTokens: 16384,

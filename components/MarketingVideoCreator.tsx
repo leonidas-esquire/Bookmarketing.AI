@@ -19,6 +19,9 @@ const platformTargets = [
     { id: 'YouTube (Long-form)', name: 'YouTube (Long-form)' },
     { id: 'Website Hero Video', name: 'Website Hero Video' },
     { id: 'Video Ads (Meta/Google)', name: 'Video Ads' },
+    { id: 'LinkedIn', name: 'LinkedIn' },
+    { id: 'Twitter (X)', name: 'Twitter (X)' },
+    { id: 'Facebook', name: 'Facebook' },
 ];
 
 const tonePreferences = [
@@ -35,7 +38,7 @@ export const MarketingVideoCreator: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [videoPlan, setVideoPlan] = useState<any | null>(null);
 
-    const [manuscriptText, setManuscriptText] = useState('');
+    const [manuscriptFile, setManuscriptFile] = useState<File | null>(null);
     const [metadata, setMetadata] = useState({
         title: '',
         subtitle: '',
@@ -48,12 +51,7 @@ export const MarketingVideoCreator: React.FC = () => {
     const [tonePreference, setTonePreference] = useState(tonePreferences[0]);
 
     const handleManuscriptSelect = useCallback((file: File) => {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            const text = event.target?.result as string;
-            setManuscriptText(text);
-        };
-        reader.readAsText(file);
+        setManuscriptFile(file);
     }, []);
 
     const handleMetadataChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -70,7 +68,7 @@ export const MarketingVideoCreator: React.FC = () => {
     };
     
     const isFormValid = () => {
-        return manuscriptText && metadata.title && metadata.genre && metadata.targetAudience && selectedPlatforms.length > 0;
+        return manuscriptFile && metadata.title && metadata.genre && metadata.targetAudience && selectedPlatforms.length > 0;
     }
 
     const handleSubmit = async () => {
@@ -82,7 +80,7 @@ export const MarketingVideoCreator: React.FC = () => {
         setError(null);
         try {
             const formData = {
-                manuscriptText,
+                manuscriptFile,
                 metadata,
                 authorGoal,
                 platformTargets: selectedPlatforms,
@@ -121,7 +119,7 @@ export const MarketingVideoCreator: React.FC = () => {
             <div className="bg-gray-800 p-6 rounded-lg shadow-lg space-y-6">
                 <div>
                     <label className="block text-lg font-medium text-indigo-200 mb-2">1. Upload Manuscript or Excerpt</label>
-                    <FileUploader onFileSelect={handleManuscriptSelect} accept=".txt" label="Upload Manuscript (.txt)" />
+                    <FileUploader onFileSelect={handleManuscriptSelect} accept=".txt,.pdf,.md,.docx" label="Upload Manuscript (.txt, .pdf, .md, .docx)" />
                 </div>
                 
                 <div>
