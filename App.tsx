@@ -22,11 +22,10 @@ const App: React.FC = () => {
   const [activeTool, setActiveTool] = useState<Tool | null>(null);
   const [user, setUser] = useState<User | null>(null);
 
-  const handleLogin = () => {
-    // Simulate a successful login
+  const handleLogin = (userData: { name: string; bookTitle: string; genre: string; }) => {
     setUser({
-      name: 'Jane Author',
-      avatarUrl: `https://api.dicebear.com/8.x/initials/svg?seed=Jane%20Author`,
+      ...userData,
+      avatarUrl: `https://api.dicebear.com/8.x/initials/svg?seed=${encodeURIComponent(userData.name)}`,
     });
   };
 
@@ -62,7 +61,7 @@ const App: React.FC = () => {
       case 'website-builder':
         return <WebsiteBuilder />;
       default:
-        return <Dashboard setActiveTool={setActiveTool} />;
+        return <Dashboard setActiveTool={setActiveTool} user={user!} />;
     }
   };
 

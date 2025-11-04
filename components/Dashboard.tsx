@@ -1,10 +1,11 @@
 
 import React from 'react';
-import { Tool } from '../types';
+import { Tool, User } from '../types';
 import { ToolCard } from './ToolCard';
 
 interface DashboardProps {
   setActiveTool: (tool: Tool) => void;
+  user: User;
 }
 
 const tools: Tool[] = [
@@ -23,12 +24,16 @@ const tools: Tool[] = [
   { id: 'video-analyzer', title: 'Trailer Analyzer', description: 'Analyze videos for key information and emotional impact.', icon: 'fa-video', comingSoon: true },
 ];
 
-export const Dashboard: React.FC<DashboardProps> = ({ setActiveTool }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ setActiveTool, user }) => {
   return (
     <div className="animate-fade-in">
       <div className="text-center mb-10">
-        <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">Your Book, Our Software, <span className="text-indigo-400">One Million Readers</span></h2>
-        <p className="mt-4 text-lg text-indigo-200 max-w-3xl mx-auto">Welcome to your AI-powered marketing co-pilot. Select a tool below to get started.</p>
+        <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">
+          Welcome, <span className="text-indigo-400">{user.name.split(' ')[0]}!</span>
+        </h2>
+        <p className="mt-4 text-lg text-indigo-200 max-w-3xl mx-auto">
+          Ready to market <span className="font-bold text-white italic">"{user.bookTitle}"</span>? Select a tool to begin.
+        </p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {tools.map(tool => (
