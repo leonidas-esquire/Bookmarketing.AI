@@ -411,65 +411,156 @@ export const generateSpeech = async (text: string, voiceName: string): Promise<A
 
 export const generateDistributionKit = async (formData: any): Promise<any> => {
     const ai = getGenAI();
-    const { manuscriptText, coverFile, title, author, genre, keywords, description, channels } = formData;
+    const { manuscriptFile, coverFile, title, author, genre, keywords, description, isbn, publisher, publicationDate, price } = formData;
 
     const coverPart = await fileToGenerativePart(coverFile);
+    const manuscriptPart = await fileToGenerativePart(manuscriptFile);
 
     const prompt = `
-Act as a world-class book launch strategist. I'm providing an author's manuscript excerpt, book cover, and metadata.
-Generate a comprehensive "Distribution Kit" as a JSON object based on the provided schema.
-Deeply analyze the content to create tailored, high-quality marketing materials for these channels: ${channels.join(', ')}.
+Act as an expert publishing operations specialist and metadata manager. I'm providing an author's manuscript, book cover, and core metadata.
+Your task is to generate a comprehensive, structured JSON object containing the core data elements for an ONIX 3.0 record.
+Deeply analyze the manuscript to infer appropriate BISAC subject codes, audience codes, and to write a compelling, long-form description for retail listings.
 
-**Metadata:**
+**Core Metadata Provided:**
 *   Title: ${title}
 *   Author: ${author}
+*   ISBN: ${isbn}
+*   Publisher: ${publisher}
+*   Publication Date: ${publicationDate}
+*   Price: ${price.currency} ${price.amount}
 *   Genre: ${genre}
 *   Keywords: ${keywords}
-*   Book Description: ${description}
+*   Short Description/Blurb: ${description}
 
-**Manuscript Excerpt:**
----
-${manuscriptText}
----
+Based on all this information, generate the complete JSON output according to the schema.
 `;
     
     const response = await ai.models.generateContent({
         model: 'gemini-2.5-pro',
-        contents: { parts: [ { text: prompt }, coverPart ] },
+        contents: { parts: [ { text: prompt }, coverPart, manuscriptPart ] },
         config: {
             responseMimeType: "application/json",
             maxOutputTokens: 16384,
-            thinkingConfig: { thinkingBudget: 4096 },
+            thinkingConfig: { thinkingBudget: 8192 },
             responseSchema: {
                 type: Type.OBJECT,
                 properties: {
-                    amazonKdp: {
+                    product_identifier: {
                         type: Type.OBJECT,
                         properties: {
-                            keywords: { type: Type.ARRAY, items: { type: Type.STRING } },
-                            categories: { type: Type.ARRAY, items: { type: Type.STRING } },
-                            aPlusContentIdeas: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { title: { type: Type.STRING }, description: { type: Type.STRING } } } }
+                            product_id_type: { type: Type.STRING, description: "Should be 'ISBN-13'" },
+                            id_value: { type: Type.STRING, description: "The provided ISBN." }
                         }
                     },
-                    socialMedia: {
+                    descriptive_detail: {
                         type: Type.OBJECT,
                         properties: {
-                            postIdeas: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { ideaTitle: { type: Type.STRING }, instagramCopy: { type: Type.STRING }, twitterCopy: { type: Type.STRING }, facebookCopy: { type: Type.STRING }, hashtags: { type: Type.STRING } } } },
-                            imagePrompts: { type: Type.ARRAY, items: { type: Type.STRING } },
-                            videoConcepts: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { title: { type: Type.STRING }, concept: { type: Type.STRING } } } }
+                            product_composition: { type: Type.STRING, description: "e.g., 'Single-item retail product'" },
+                            product_form: { type: Type.STRING, description: "e.g., 'EB' for Ebook" },
+                            title_detail: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    title_type: { type: Type.STRING, description: "e.g., 'Distinctive title (book)'" },
+                                    title_element: {
+                                        type: Type.OBJECT,
+                                        properties: {
+                                            title_text: { type: Type.STRING, description: "The main book title." }
+                                        }
+                                    }
+                                }
+                            },
+                            contributor: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    sequence_number: { type: Type.INTEGER },
+                                    contributor_role: { type: Type.STRING, description: "e.g., 'By author'" },
+                                    person_name: { type: Type.STRING, description: "The author's name." }
+                                }
+                            },
+                            language: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    language_role: { type: Type.STRING, description: "e.g., 'Language of text'" },
+                                    language_code: { type: Type.STRING, description: "e.g., 'eng'" }
+                                }
+                            },
+                            subject: {
+                                type: Type.ARRAY,
+                                description: "Generate 3-5 relevant BISAC codes based on the manuscript.",
+                                items: {
+                                    type: Type.OBJECT,
+                                    properties: {
+                                        subject_scheme_identifier: { type: Type.STRING, description: "Should be 'BISAC Subject Heading'" },
+                                        subject_code: { type: Type.STRING, description: "A valid BISAC code, e.g., 'FIC031010'" },
+                                        subject_heading_text: { type: Type.STRING, description: "The descriptive text for the BISAC code, e.g., 'FICTION / Thrillers / Suspense'" }
+                                    }
+                                }
+                            },
+                             audience: {
+                                type: Type.ARRAY,
+                                items: {
+                                    type: Type.OBJECT,
+                                    properties: {
+                                        audience_code_type: { type: Type.STRING, description: "e.g., 'ONIX Audience codes'" },
+                                        audience_code_value: { type: Type.STRING, description: "e.g., '01' for General/Trade" }
+                                    }
+                                }
+                            }
                         }
                     },
-                    authorWebsite: {
+                    collateral_detail: {
                         type: Type.OBJECT,
                         properties: {
-                            pressKitMarkdown: { type: Type.STRING },
-                            blogPostTopics: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { title: { type: Type.STRING }, outline: { type: Type.STRING } } } }
+                            text_content: {
+                                type: Type.ARRAY,
+                                items: {
+                                     type: Type.OBJECT,
+                                     properties: {
+                                         text_type: { type: Type.STRING, description: "e.g., 'Description'" },
+                                         content_audience: { type: Type.STRING, description: "e.g., 'For general public'" },
+                                         text: { type: Type.STRING, description: "A compelling, long-form book description (300-500 words) generated from the manuscript." }
+                                     }
+                                }
+                            }
                         }
                     },
-                    emailNewsletter: {
+                    publishing_detail: {
                         type: Type.OBJECT,
                         properties: {
-                            launchAnnouncement: { type: Type.OBJECT, properties: { subject: { type: Type.STRING }, body: { type: Type.STRING } } }
+                            publisher: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    publishing_role: { type: Type.STRING, description: "e.g., 'Publisher'" },
+                                    publisher_name: { type: Type.STRING, description: "The provided publisher's name." }
+                                }
+                            },
+                            publication_date: { type: Type.STRING, description: "The provided publication date in YYYY-MM-DD format." }
+                        }
+                    },
+                    product_supply: {
+                        type: Type.OBJECT,
+                        properties: {
+                            supply_detail: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    supplier: {
+                                        type: Type.OBJECT,
+                                        properties: {
+                                            supplier_role: { type: Type.STRING, description: "e.g., 'Publisher to retailers'" },
+                                            supplier_name: { type: Type.STRING, description: "The provided publisher's name." }
+                                        }
+                                    },
+                                    product_availability: { type: Type.STRING, description: "e.g., 'Available'" },
+                                    price: {
+                                        type: Type.OBJECT,
+                                        properties: {
+                                            price_type: { type: Type.STRING, description: "e.g., 'RRP, excluding tax'" },
+                                            price_amount: { type: Type.NUMBER },
+                                            currency_code: { type: Type.STRING, description: "e.g., 'USD'" }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
