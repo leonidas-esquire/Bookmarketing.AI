@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import { exportCampaignToPDF } from '../services/pdfExportService';
 
 const Accordion: React.FC<{ title: string; icon: string; children: React.ReactNode; defaultOpen?: boolean }> = ({ title, icon, children, defaultOpen = false }) => {
     const [isOpen, setIsOpen] = React.useState(defaultOpen);
@@ -33,11 +34,34 @@ const Tag: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 );
 
 
-export const CampaignDisplay: React.FC<{ plan: any }> = ({ plan }) => {
+export const CampaignDisplay: React.FC<{ plan: any, onReset: () => void }> = ({ plan, onReset }) => {
     const { step1_bookAnalysis, step2_campaignArchitecture, step3_multiChannelCampaigns, step4_assetGeneration } = plan;
+    const [isExporting, setIsExporting] = useState(false);
+
+    const handleExport = async () => {
+        setIsExporting(true);
+        try {
+            await exportCampaignToPDF(plan);
+        } catch (e) {
+            console.error("PDF Export failed", e);
+            alert("An error occurred while exporting the PDF. Please check the console for details.");
+        } finally {
+            setIsExporting(false);
+        }
+    };
+
 
     return (
         <div className="space-y-4 animate-fade-in">
+            <div className="flex items-center gap-4 mb-4">
+                 <button onClick={onReset} className="px-4 py-2 text-sm bg-indigo-700 text-white font-semibold rounded-md hover:bg-indigo-800">
+                    <i className="fas fa-arrow-left mr-2"></i>Analyze Another Manuscript
+                </button>
+                 <button onClick={handleExport} disabled={isExporting} className="px-4 py-2 text-sm bg-purple-600 text-white font-semibold rounded-md hover:bg-purple-700 transition-colors disabled:bg-purple-800 disabled:cursor-not-allowed">
+                     {isExporting ? <><i className="fas fa-spinner fa-spin mr-2"></i>Exporting...</> : <><i className="fas fa-file-pdf mr-2"></i>Export to PDF</>}
+                </button>
+            </div>
+
             <Accordion title="Step 1: Comprehensive Book Analysis" icon="fa-search" defaultOpen>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <InfoCard title="Genre & Market Positioning"><ReactMarkdown>{step1_bookAnalysis?.genreAndPositioning || ''}</ReactMarkdown></InfoCard>

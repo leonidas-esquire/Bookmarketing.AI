@@ -104,10 +104,7 @@ export const CampaignGenerator: React.FC = () => {
     if (campaignPlan) {
         return (
             <div>
-                 <button onClick={() => setCampaignPlan(null)} className="mb-4 px-4 py-2 text-sm bg-indigo-700 text-white font-semibold rounded-md hover:bg-indigo-800">
-                    <i className="fas fa-arrow-left mr-2"></i>Analyze Another Manuscript
-                </button>
-                <CampaignDisplay plan={campaignPlan} />
+                <CampaignDisplay plan={campaignPlan} onReset={() => setCampaignPlan(null)} />
             </div>
         )
     }
