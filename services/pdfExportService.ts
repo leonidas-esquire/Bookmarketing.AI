@@ -5,6 +5,8 @@ const PAGE_WIDTH = 210;
 const PAGE_HEIGHT = 297;
 const MARGIN = 15;
 const MAX_WIDTH = PAGE_WIDTH - MARGIN * 2;
+const CONTENT_START_Y = 28; // The Y position where content starts after the header
+const FOOTER_HEIGHT = 15; // Reserve space for the footer
 const FONT_SIZES = { title: 26, h1: 20, h2: 16, h3: 13, body: 11, small: 9 };
 const PRIMARY_COLOR = '#4F46E5'; // Indigo
 const TEXT_COLOR = '#1F2937'; // Dark Gray
@@ -26,10 +28,10 @@ class PdfBuilder {
     
     // Utility to check if a new page is needed before adding content
     checkPageBreak(heightNeeded: number) {
-        if (this.cursorY + heightNeeded > PAGE_HEIGHT - MARGIN) {
+        if (this.cursorY + heightNeeded > PAGE_HEIGHT - MARGIN - FOOTER_HEIGHT) {
             this.doc.addPage();
-            this.cursorY = MARGIN;
             this.addHeader();
+            this.cursorY = CONTENT_START_Y;
         }
     }
 
@@ -45,32 +47,47 @@ class PdfBuilder {
     
     // Adds a title (H1) and moves the cursor
     addH1(text: string) {
-        this.checkPageBreak(20);
         this.doc.setFont('helvetica', 'bold');
         this.doc.setFontSize(FONT_SIZES.h1);
         this.doc.setTextColor(PRIMARY_COLOR);
-        this.doc.text(text, MARGIN, this.cursorY);
-        this.cursorY += 12;
+
+        const lines = this.doc.splitTextToSize(text, MAX_WIDTH);
+        const textHeight = lines.length * FONT_SIZES.h1 * 0.35 * LINE_HEIGHT_RATIO;
+        
+        this.checkPageBreak(textHeight);
+        
+        this.doc.text(lines, MARGIN, this.cursorY);
+        this.cursorY += textHeight + 6; // Add text height and spacing
     }
     
     // Adds a subtitle (H2) and moves the cursor
     addH2(text: string) {
-        this.checkPageBreak(15);
         this.doc.setFont('helvetica', 'bold');
         this.doc.setFontSize(FONT_SIZES.h2);
         this.doc.setTextColor(TEXT_COLOR);
-        this.doc.text(text, MARGIN, this.cursorY);
-        this.cursorY += 9;
+
+        const lines = this.doc.splitTextToSize(text, MAX_WIDTH);
+        const textHeight = lines.length * FONT_SIZES.h2 * 0.35 * LINE_HEIGHT_RATIO;
+        
+        this.checkPageBreak(textHeight);
+
+        this.doc.text(lines, MARGIN, this.cursorY);
+        this.cursorY += textHeight + 5; // Add text height and spacing
     }
 
     // Adds a smaller heading (H3)
     addH3(text: string) {
-        this.checkPageBreak(12);
         this.doc.setFont('helvetica', 'bold');
         this.doc.setFontSize(FONT_SIZES.h3);
         this.doc.setTextColor(TEXT_COLOR);
-        this.doc.text(text, MARGIN, this.cursorY);
-        this.cursorY += 7;
+
+        const lines = this.doc.splitTextToSize(text, MAX_WIDTH);
+        const textHeight = lines.length * FONT_SIZES.h3 * 0.35 * LINE_HEIGHT_RATIO;
+
+        this.checkPageBreak(textHeight);
+        
+        this.doc.text(lines, MARGIN, this.cursorY);
+        this.cursorY += textHeight + 4; // Add text height and spacing
     }
     
     // Adds body text, handles line wrapping, and moves the cursor
@@ -143,8 +160,8 @@ class PdfBuilder {
 
     addStep1() {
         this.doc.addPage();
-        this.cursorY = MARGIN;
         this.addHeader();
+        this.cursorY = CONTENT_START_Y;
         this.addH1('Step 1: Comprehensive Book Analysis');
 
         this.addH2('Genre & Market Positioning');
@@ -168,8 +185,8 @@ class PdfBuilder {
     
      addStep2() {
         this.doc.addPage();
-        this.cursorY = MARGIN;
         this.addHeader();
+        this.cursorY = CONTENT_START_Y;
         this.addH1('Step 2: Campaign Architecture');
 
         this.addH2('24-Hour Launch Plan');
@@ -191,8 +208,8 @@ class PdfBuilder {
 
     addStep3() {
         this.doc.addPage();
-        this.cursorY = MARGIN;
         this.addHeader();
+        this.cursorY = CONTENT_START_Y;
         this.addH1('Step 3: Multi-Channel Strategy');
 
         this.addH2('Amazon Optimization');
@@ -207,17 +224,25 @@ class PdfBuilder {
             this.addBody(sm.strategy);
         });
 
-        this.addH2('Email Nurture Sequence');
-         this.plan.step3_multiChannelCampaigns.emailMarketingSequence.forEach((email: any) => {
-            this.addH3(`Day ${email.day}: ${email.subject}`);
-            this.addBody(email.body);
-        });
+        // The email sequence section gets its own set of pages for clarity.
+        const emails = this.plan.step3_multiChannelCampaigns.emailMarketingSequence;
+        if (emails && emails.length > 0) {
+             emails.forEach((email: any, index: number) => {
+                this.doc.addPage();
+                this.addHeader();
+                this.cursorY = CONTENT_START_Y;
+
+                this.addH2('Email Nurture Sequence');
+                this.addH3(`Email ${index + 1} of ${emails.length}: Day ${email.day} - ${email.subject}`);
+                this.addBody(email.body);
+            });
+        }
     }
 
     addStep4() {
         this.doc.addPage();
-        this.cursorY = MARGIN;
         this.addHeader();
+        this.cursorY = CONTENT_START_Y;
         this.addH1('Step 4: Asset Generation');
 
         this.addH2('Book Blurbs');
