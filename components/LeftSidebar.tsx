@@ -1,13 +1,15 @@
+
 import React, { useState } from 'react';
 import { CampaignGenerator } from './AudienceAnalyzer';
 import { BookDistributor } from './BookDistributor';
 import { SalesAnalytics } from './SalesAnalytics';
 import { MarketingVideoCreator } from './MarketingVideoCreator';
-import { SalesRecord, User } from '../types';
+import { SalesRecord, User, Book } from '../types';
 
 interface LeftSidebarProps {
     user: User;
     salesData: SalesRecord[];
+    activeBook: Book;
 }
 
 const tabs = [
@@ -17,7 +19,7 @@ const tabs = [
     { id: 'marketing-video-creator', title: 'Marketing Video Creator', icon: 'fa-bullhorn' },
 ];
 
-export const LeftSidebar: React.FC<LeftSidebarProps> = ({ user, salesData }) => {
+export const LeftSidebar: React.FC<LeftSidebarProps> = ({ user, salesData, activeBook }) => {
     const [activeTab, setActiveTab] = useState(tabs[0].id);
 
     const renderActiveTabContent = () => {
@@ -27,7 +29,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({ user, salesData }) => 
             case 'book-distributor':
                 return <BookDistributor />;
             case 'sales-analytics':
-                return <SalesAnalytics user={user} salesData={salesData} />;
+                return <SalesAnalytics user={user} salesData={salesData} book={activeBook} />;
             case 'marketing-video-creator':
                 return <MarketingVideoCreator />;
             default:

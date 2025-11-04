@@ -1,16 +1,17 @@
 
 import React, { useState } from 'react';
-import { User, SalesPageConfig, SalesRecord } from '../types';
+import { User, SalesPageConfig, SalesRecord, Book } from '../types';
 import { StripeCheckoutModal } from './StripeCheckoutModal';
 
 interface PublicSalesPageProps {
     user: User;
+    book: Book;
     config: SalesPageConfig;
     onBackToApp: () => void;
     onNewSale: (sale: SalesRecord) => void;
 }
 
-export const PublicSalesPage: React.FC<PublicSalesPageProps> = ({ user, config, onBackToApp, onNewSale }) => {
+export const PublicSalesPage: React.FC<PublicSalesPageProps> = ({ user, book, config, onBackToApp, onNewSale }) => {
     const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
     const [purchaseComplete, setPurchaseComplete] = useState(false);
 
@@ -39,7 +40,7 @@ export const PublicSalesPage: React.FC<PublicSalesPageProps> = ({ user, config, 
                 <StripeCheckoutModal 
                     onClose={() => setIsCheckoutOpen(false)}
                     onSuccess={handleSuccessfulPurchase}
-                    bookTitle={user.bookTitle}
+                    bookTitle={book.title}
                     price={config.price}
                 />
             )}
@@ -49,7 +50,7 @@ export const PublicSalesPage: React.FC<PublicSalesPageProps> = ({ user, config, 
                     <div className="md:w-1/3">
                         {/* Placeholder for cover image - can be replaced with a real one if available */}
                         <div className="bg-gray-800 h-64 md:h-full flex items-center justify-center">
-                             <img src={`https://api.dicebear.com/8.x/icons/svg?seed=${encodeURIComponent(user.bookTitle)}&backgroundColor=4f46e5,818cf8,c7d2fe`} alt="Book Cover" className="w-40 h-56 object-cover rounded shadow-lg" />
+                             <img src={`https://api.dicebear.com/8.x/icons/svg?seed=${encodeURIComponent(book.title)}&backgroundColor=4f46e5,818cf8,c7d2fe`} alt="Book Cover" className="w-40 h-56 object-cover rounded shadow-lg" />
                         </div>
                     </div>
                     <div className="md:w-2/3 p-8 flex flex-col justify-center">
@@ -61,7 +62,7 @@ export const PublicSalesPage: React.FC<PublicSalesPageProps> = ({ user, config, 
                             </div>
                         ) : (
                             <>
-                                <h1 className="text-3xl md:text-4xl font-bold text-gray-900">{user.bookTitle}</h1>
+                                <h1 className="text-3xl md:text-4xl font-bold text-gray-900">{book.title}</h1>
                                 <p className="text-lg text-gray-500 mt-1">by {user.name}</p>
                                 <p className="text-gray-700 mt-6 leading-relaxed">
                                     {config.pitch}

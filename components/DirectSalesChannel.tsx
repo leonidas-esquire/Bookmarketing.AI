@@ -1,35 +1,33 @@
 
 import React, { useState, useEffect } from 'react';
-import { User, SalesPageConfig } from '../types';
+import { Book, SalesPageConfig } from '../types';
 import { generateContent } from '../services/geminiService';
 import { LoadingSpinner } from './LoadingSpinner';
 
 interface DirectSalesChannelProps {
-    user: User;
+    book: Book;
     config: SalesPageConfig | null;
     onConfigUpdate: (config: SalesPageConfig | null) => void;
     onViewSalesPage: () => void;
 }
 
-export const DirectSalesChannel: React.FC<DirectSalesChannelProps> = ({ user, config, onConfigUpdate, onViewSalesPage }) => {
+export const DirectSalesChannel: React.FC<DirectSalesChannelProps> = ({ book, config, onConfigUpdate, onViewSalesPage }) => {
     const [price, setPrice] = useState(config?.price || 12.99);
-    const [pitch, setPitch] = useState(config?.pitch || `Discover a world of mystery and adventure in "${user.bookTitle}". Get your digital copy today!`);
+    const [pitch, setPitch] = useState(config?.pitch || `Discover a world of mystery and adventure in "${book.title}". Get your digital copy today!`);
     const [isGeneratingPitch, setIsGeneratingPitch] = useState(false);
 
     const isActive = config?.isActive || false;
     
     useEffect(() => {
-        // Sync local state if global config changes (e.g., on load)
-        if (config) {
-            setPrice(config.price);
-            setPitch(config.pitch);
-        }
-    }, [config]);
+        // Sync local state if global config changes (e.g., on book switch)
+        setPrice(config?.price || 12.99);
+        setPitch(config?.pitch || `Discover a world of mystery and adventure in "${book.title}". Get your digital copy today!`);
+    }, [config, book.title]);
 
     const handleGeneratePitch = async () => {
         setIsGeneratingPitch(true);
         try {
-            const prompt = `Act as a marketing copywriter. Write a short, exciting, one-paragraph sales pitch (around 50 words) for a book titled "${user.bookTitle}" in the ${user.genre} genre. The pitch should be punchy and end with a clear call to action to buy the book.`;
+            const prompt = `Act as a marketing copywriter. Write a short, exciting, one-paragraph sales pitch (around 50 words) for a book titled "${book.title}" in the ${book.genre} genre. The pitch should be punchy and end with a clear call to action to buy the book.`;
             const generatedPitch = await generateContent(prompt, 'gemini-2.5-flash');
             setPitch(generatedPitch);
         } catch (error) {
@@ -111,7 +109,7 @@ export const DirectSalesChannel: React.FC<DirectSalesChannelProps> = ({ user, co
                             <div>
                                 <label className="block text-sm font-medium text-indigo-200 mb-1">Sharable Link</label>
                                 <div className="flex gap-2">
-                                    <input type="text" readOnly value={`bookmarketing.ai/s/${user.bookTitle.toLowerCase().replace(/\s+/g, '-')}`} className="flex-grow p-2 bg-gray-700 border border-gray-600 rounded-md text-gray-400 italic"/>
+                                    <input type="text" readOnly value={`bookmarketing.ai/s/${book.title.toLowerCase().replace(/\s+/g, '-')}`} className="flex-grow p-2 bg-gray-700 border border-gray-600 rounded-md text-gray-400 italic"/>
                                     <button onClick={onViewSalesPage} className="px-4 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700" title="View Live Page">
                                         <i className="fas fa-external-link-alt"></i>
                                     </button>

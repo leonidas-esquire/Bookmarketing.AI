@@ -1,8 +1,10 @@
 
 import React, { useState } from 'react';
+import { User } from '../types';
 
 interface LoginScreenProps {
-  onLogin: (userData: { name: string; bookTitle: string; genre: string }) => void;
+  onLogin: (userData?: { name: string; bookTitle: string; genre: string }) => void;
+  existingUser: User | null;
 }
 
 const ProgressBar = ({ step }: { step: number }) => (
@@ -30,7 +32,7 @@ const Step1: React.FC<{ onNext: () => void }> = ({ onNext }) => (
 
 const Step2: React.FC<{ onNext: () => void; onBack: () => void; data: any; onChange: any; isValid: boolean }> = ({ onNext, onBack, data, onChange, isValid }) => (
     <div>
-        <h2 className="text-2xl font-bold text-white text-center mb-6">First, tell us about your project.</h2>
+        <h2 className="text-2xl font-bold text-white text-center mb-6">First, tell us about your first book.</h2>
         <div className="space-y-4">
             <div>
                 <label htmlFor="name" className="block text-sm font-medium text-indigo-200 mb-1">Author Name</label>
@@ -83,8 +85,25 @@ const Step3: React.FC<{ onBack: () => void; onFinish: () => void }> = ({ onBack,
     </div>
 );
 
+const ExistingUserLogin: React.FC<{ user: User; onLogin: () => void }> = ({ user, onLogin }) => (
+    <div className="text-center animate-fade-in">
+        <img src={user.avatarUrl} alt={user.name} className="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-indigo-500" />
+        <h2 className="text-3xl font-bold tracking-tight text-white">Welcome back, <span className="text-indigo-400">{user.name.split(' ')[0]}!</span></h2>
+        <p className="mt-2 text-lg text-indigo-200">
+            Ready to continue your journey?
+        </p>
+        <div className="mt-8">
+            <button
+                onClick={onLogin}
+                className="bg-indigo-600 text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-indigo-700 transition-colors transform hover:scale-105 shadow-lg"
+            >
+                Continue to Dashboard <i className="fas fa-arrow-right ml-2"></i>
+            </button>
+        </div>
+    </div>
+);
 
-export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
+export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, existingUser }) => {
     const [step, setStep] = useState(1);
     const [userData, setUserData] = useState({
         name: '',
@@ -102,7 +121,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
 
     const isStep2Valid = userData.name.trim() !== '' && userData.bookTitle.trim() !== '' && userData.genre.trim() !== '';
 
-    const renderStep = () => {
+    const renderNewUserFlow = () => {
         switch(step) {
             case 1: return <Step1 onNext={handleNext} />;
             case 2: return <Step2 onNext={handleNext} onBack={handleBack} data={userData} onChange={handleChange} isValid={isStep2Valid} />;
@@ -121,10 +140,16 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
                     </h1>
                 </div>
                 <div className="bg-gray-800 bg-opacity-50 backdrop-blur-sm p-8 rounded-lg shadow-xl border border-indigo-500/20">
-                    <ProgressBar step={step} />
-                    <div className="animate-fade-in">
-                        {renderStep()}
-                    </div>
+                    {existingUser ? (
+                        <ExistingUserLogin user={existingUser} onLogin={() => onLogin()} />
+                    ) : (
+                        <>
+                            <ProgressBar step={step} />
+                            <div className="animate-fade-in">
+                                {renderNewUserFlow()}
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
         </div>

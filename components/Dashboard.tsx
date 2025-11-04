@@ -1,11 +1,12 @@
 
 import React from 'react';
-import { Tool, User } from '../types';
+import { Tool, User, Book } from '../types';
 import { ToolCard } from './ToolCard';
 
 interface DashboardProps {
   setActiveTool: (tool: Tool) => void;
   user: User;
+  activeBook: Book;
 }
 
 const tools: Tool[] = [
@@ -28,7 +29,7 @@ const tools: Tool[] = [
   { id: 'audio-transcriber', title: 'Content Scaler AI', description: 'Transcribe spoken ideas into blog posts, social media updates, and newsletters to scale content production.', icon: 'fa-clone' },
 ];
 
-export const Dashboard: React.FC<DashboardProps> = ({ setActiveTool, user }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ setActiveTool, user, activeBook }) => {
   return (
     <div className="animate-fade-in">
       <div className="text-center mb-10">
@@ -36,7 +37,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTool, user }) => 
           Welcome, <span className="text-indigo-400">{user.name.split(' ')[0]}!</span>
         </h2>
         <p className="mt-4 text-lg text-indigo-200 max-w-3xl mx-auto">
-          Ready to market <span className="font-bold text-white italic">"{user.bookTitle}"</span>? Select a tool to begin.
+          Ready to market <span className="font-bold text-white italic">"{activeBook.title}"</span>? Select a tool to begin.
         </p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

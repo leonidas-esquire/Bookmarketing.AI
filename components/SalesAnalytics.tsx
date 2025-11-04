@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { User, SalesRecord } from '../types';
+import { User, SalesRecord, Book } from '../types';
 import { LoadingSpinner } from './LoadingSpinner';
 import { StatCard } from './StatCard';
 import { SalesChart } from './SalesChart';
@@ -8,6 +8,7 @@ import { SalesChart } from './SalesChart';
 interface SalesAnalyticsProps {
   user: User;
   salesData: SalesRecord[];
+  book: Book;
 }
 
 const timeframes = [
@@ -17,7 +18,7 @@ const timeframes = [
     { label: 'All Time', value: 365 },
 ];
 
-export const SalesAnalytics: React.FC<SalesAnalyticsProps> = ({ user, salesData }) => {
+export const SalesAnalytics: React.FC<SalesAnalyticsProps> = ({ user, salesData, book }) => {
     const [timeframe, setTimeframe] = useState<number>(30);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -80,7 +81,7 @@ export const SalesAnalytics: React.FC<SalesAnalyticsProps> = ({ user, salesData 
             <div className="flex flex-col sm:flex-row justify-between items-center mb-8">
                 <div className="text-center sm:text-left mb-4 sm:mb-0">
                     <h2 className="text-3xl font-bold">Sales Analytics</h2>
-                    <p className="text-indigo-200">Your performance overview for <span className="font-bold text-white italic">"{user.bookTitle}"</span>.</p>
+                    <p className="text-indigo-200">Your performance overview for <span className="font-bold text-white italic">"{book.title}"</span>.</p>
                 </div>
                 <div className="bg-gray-800 p-1 rounded-lg flex space-x-1">
                     {timeframes.map(tf => (
