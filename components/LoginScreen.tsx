@@ -15,6 +15,7 @@ const ProgressBar = ({ step }: { step: number }) => (
 
 const Step1: React.FC<{ onNext: () => void }> = ({ onNext }) => (
     <div className="text-center">
+        <p className="text-sm text-white uppercase tracking-widest mb-4">Your book, our software, 1 million readers!</p>
         <h2 className="text-3xl font-bold tracking-tight text-white">Your journey to <span className="text-indigo-400">one million readers</span> starts now.</h2>
         <p className="mt-4 text-lg text-indigo-200 max-w-lg mx-auto">
             We've built a suite of AI-powered tools to handle your marketing, so you can focus on what you do best: writing.
