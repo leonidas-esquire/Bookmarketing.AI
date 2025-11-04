@@ -9,19 +9,23 @@ interface DashboardProps {
 }
 
 const tools: Tool[] = [
-  { id: 'image-generator', title: 'AI Illustrator', description: 'Generate unique concept art and promotional images from text.', icon: 'fa-paint-brush' },
-  { id: 'image-editor', title: 'Cover Art Studio', description: 'Edit your book cover or promo images using simple text commands.', icon: 'fa-wand-magic-sparkles' },
-  { id: 'video-generator', title: 'Book Trailer Creator', description: 'Create short, engaging video clips from text or your book cover.', icon: 'fa-film' },
-  { id: 'direct-sales-channel', title: 'Direct Sales Channel', description: 'Sell your book directly with a simulated Stripe checkout.', icon: 'fa-credit-card' },
-  // FIX: Corrected a typo in the object property `id:t` to `id`.
-  { id: 'funnel-builder', title: 'Funnel Builder AI', description: 'Generate a complete JSON sales funnel plan from your manuscript.', icon: 'fa-sitemap' },
-  { id: 'cover-analyzer', title: 'Cover Feedback AI', description: 'Get AI-powered feedback on your book cover\'s marketability.', icon: 'fa-search-plus' },
-  { id: 'copywriter', title: 'Marketing Copywriter', description: 'Generate blurbs, social media posts, and ad copy in seconds.', icon: 'fa-pencil-alt' },
-  { id: 'market-research', title: 'Trend Spotter', description: 'Get up-to-date market insights with Google Search grounding.', icon: 'fa-chart-line' },
-  { id: 'website-builder', title: 'AI Website Builder', description: 'Upload your book\'s PDF to generate a high-converting author website design.', icon: 'fa-desktop' },
-  { id: 'audiobook-creator', title: 'Audiobook Sampler', description: 'Convert text excerpts into high-quality audio samples.', icon: 'fa-microphone-alt' },
-  { id: 'audio-transcriber', title: 'Author Dictation', description: 'Transcribe your spoken ideas, notes, or chapter drafts.', icon: 'fa-waveform' },
-  { id: 'video-analyzer', title: 'Trailer Analyzer', description: 'Analyze videos for key information and emotional impact.', icon: 'fa-video', comingSoon: true },
+  // Creative & Psychological
+  { id: 'image-generator', title: 'Creative Ad Studio', description: 'Generate unique ad creatives, concept art, and social media visuals. Fueling creative innovation.', icon: 'fa-magic' },
+  { id: 'copywriter', title: 'Psychological Copy AI', description: 'Generate blurbs, ads, and social posts using proven psychological triggers to maximize engagement.', icon: 'fa-brain' },
+  { id: 'video-generator', title: 'Viral Video Generator', description: 'Create short, emotionally engaging video clips optimized for virality on TikTok, Reels, and Shorts.', icon: 'fa-film' },
+  { id: 'audiobook-creator', title: 'Multi-Channel Audio AI', description: 'Convert text excerpts into audio for podcasts, social media, and audiobook samples.', icon: 'fa-headphones-alt' },
+  
+  // Data & Intelligence
+  { id: 'market-research', title: 'Market Intelligence AI', description: 'Get real-time insights on competitor positioning, market trends, and reader conversations.', icon: 'fa-chart-line' },
+  { id: 'cover-analyzer', title: 'Marketability Analyzer', description: 'Get real-time, data-driven feedback on your book cover\'s genre-fit and commercial appeal.', icon: 'fa-search-dollar' },
+  { id: 'image-editor', title: 'A/B Cover Optimizer', description: 'Edit your cover art and generate variations for data-driven A/B testing on retail sites.', icon: 'fa-chart-pie' },
+  { id: 'video-analyzer', title: 'Performance Optimizer AI', description: 'Analyze video, ad, and email performance data to receive continuous optimization recommendations.', icon: 'fa-tachometer-alt', comingSoon: true },
+  
+  // Scaling & Integration
+  { id: 'funnel-builder', title: 'Reader Journey AI', description: 'Architect a complete, psychology-driven sales funnel to guide readers from awareness to purchase.', icon: 'fa-sitemap' },
+  { id: 'website-builder', title: 'Author Hub Builder', description: 'Integrate all your marketing channels into a high-converting, central author website.', icon: 'fa-desktop' },
+  { id: 'direct-sales-channel', title: 'Author Sales Platform', description: 'Systematically scale your income by selling your book directly to readers with a high-converting checkout.', icon: 'fa-store' },
+  { id: 'audio-transcriber', title: 'Content Scaler AI', description: 'Transcribe spoken ideas into blog posts, social media updates, and newsletters to scale content production.', icon: 'fa-clone' },
 ];
 
 export const Dashboard: React.FC<DashboardProps> = ({ setActiveTool, user }) => {
