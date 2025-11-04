@@ -64,29 +64,48 @@ const extractAndParseJson = (text: string) => {
 };
 
 const handleJsonResponse = (response: GenerateContentResponse) => {
-    if (!response.candidates || response.candidates.length === 0) {
-        const blockReason = response.promptFeedback?.blockReason;
+    // Check for an explicit block reason first.
+    const blockReason = response.promptFeedback?.blockReason;
+    if (blockReason) {
         const safetyRatings = response.promptFeedback?.safetyRatings;
-        let errorMessage = "The AI model did not return a response, which may be due to the safety policy.";
-        if (blockReason) {
-            errorMessage += ` Reason: ${blockReason}.`;
-        }
+        let errorMessage = `The request was blocked by the safety policy. Reason: ${blockReason}.`;
+        
         if (safetyRatings && safetyRatings.length > 0) {
-            const problematicRatings = safetyRatings.filter(r => r.probability !== 'NEGLIGIBLE' && r.probability !== 'LOW');
-            if(problematicRatings.length > 0) {
-                 errorMessage += ` Details: ${problematicRatings.map(r => `${r.category} was rated ${r.probability}`).join(', ')}.`;
+            const problematicRatings = safetyRatings
+                .filter(r => r.probability !== 'NEGLIGIBLE' && r.probability !== 'LOW')
+                .map(r => `${r.category} was rated ${r.probability}`);
+
+            if (problematicRatings.length > 0) {
+                 errorMessage += ` Specific concerns: ${problematicRatings.join(', ')}.`;
             }
         }
-         errorMessage += " Please try modifying your input or uploaded file.";
+         errorMessage += " Please review your uploaded content for anything that might violate safety guidelines and try again.";
         throw new Error(errorMessage);
     }
     
     const jsonText = response.text;
+    const candidate = response.candidates?.[0];
+
     if (!jsonText) {
-        throw new Error("Received an empty text response from the AI model. The content might have been blocked.");
+        if (!candidate) {
+             throw new Error("The AI model did not return a valid response. There were no candidates generated, which could indicate a problem with the model or the request.");
+        }
+        // Give a more specific error for empty text responses based on why the model stopped.
+        throw new Error(`Received an empty text response from the AI model. The generation finished with reason: ${candidate.finishReason}. This could mean the content was filtered or the request resulted in no output.`);
     }
-    return extractAndParseJson(jsonText);
+
+    try {
+        return extractAndParseJson(jsonText);
+    } catch (e: any) {
+        // If parsing fails, check if it was because the response was cut short.
+        if (candidate?.finishReason === 'MAX_TOKENS') {
+            throw new Error(`The AI's response was too long and was cut short before it could finish generating the complete JSON plan. While we've increased the token limits, your manuscript might require an exceptionally large plan. Please try with a smaller excerpt if the issue persists.`);
+        }
+        // Re-throw the original parsing error if it wasn't due to MAX_TOKENS.
+        throw e;
+    }
 };
+
 
 export const generateImage = async (prompt: string, aspectRatio: string): Promise<string> => {
   const ai = getGenAI();
@@ -227,6 +246,8 @@ Finally, generate a set of targeted marketing copy designed to resonate with thi
         contents: { parts: [{ text: prompt }, manuscriptPart] },
         config: {
             responseMimeType: "application/json",
+            maxOutputTokens: 16384,
+            thinkingConfig: { thinkingBudget: 4096 },
             responseSchema: {
                 type: Type.OBJECT,
                 properties: {
@@ -387,6 +408,8 @@ ${manuscriptText}
         contents: { parts: [ { text: prompt }, coverPart ] },
         config: {
             responseMimeType: "application/json",
+            maxOutputTokens: 16384,
+            thinkingConfig: { thinkingBudget: 4096 },
             responseSchema: {
                 type: Type.OBJECT,
                 properties: {
@@ -447,6 +470,8 @@ The output must be a JSON object conforming to the provided schema.
         contents: { parts: [ { text: prompt }, pdfPart ] },
         config: {
             responseMimeType: "application/json",
+            maxOutputTokens: 16384,
+            thinkingConfig: { thinkingBudget: 4096 },
             responseSchema: {
                 type: Type.OBJECT,
                 properties: {
@@ -527,6 +552,8 @@ All generated copy (headlines, emails, ads) must be persuasive, emotionally reso
         contents: { parts: [{ text: prompt }, manuscriptPart] },
         config: {
             responseMimeType: "application/json",
+            maxOutputTokens: 16384,
+            thinkingConfig: { thinkingBudget: 4096 },
             responseSchema: {
                 type: Type.OBJECT,
                 properties: {
