@@ -17,6 +17,7 @@ import { WebsiteBuilder } from './components/WebsiteBuilder';
 import { Tool, User } from './types';
 import { LoginScreen } from './components/LoginScreen';
 import { FunnelBuilder } from './components/FunnelBuilder';
+import { MarketingVideoCreator } from './components/MarketingVideoCreator';
 
 const App: React.FC = () => {
   const [activeTool, setActiveTool] = useState<Tool | null>(null);
@@ -42,6 +43,8 @@ const App: React.FC = () => {
         return <ImageGenerator />;
       case 'video-generator':
         return <VideoGenerator />;
+      case 'marketing-video-creator':
+        return <MarketingVideoCreator />;
       case 'book-distributor':
         return <BookDistributor />;
       case 'funnel-builder':

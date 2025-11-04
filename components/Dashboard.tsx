@@ -12,6 +12,8 @@ const tools: Tool[] = [
   { id: 'image-generator', title: 'AI Illustrator', description: 'Generate unique concept art and promotional images from text.', icon: 'fa-paint-brush' },
   { id: 'image-editor', title: 'Cover Art Studio', description: 'Edit your book cover or promo images using simple text commands.', icon: 'fa-wand-magic-sparkles' },
   { id: 'video-generator', title: 'Book Trailer Creator', description: 'Create short, engaging video clips from text or your book cover.', icon: 'fa-film' },
+  { id: 'marketing-video-creator', title: 'Marketing Video Creator', description: 'Turn your manuscript into a complete video marketing campaign plan.', icon: 'fa-bullhorn' },
+  // FIX: Corrected a typo in the object definition for the Book Distributor tool.
   { id: 'book-distributor', title: 'Book Distributor', description: 'Prepare a distribution kit for major marketing channels.', icon: 'fa-rocket' },
   { id: 'funnel-builder', title: 'Funnel Builder AI', description: 'Generate a complete JSON sales funnel plan from your manuscript.', icon: 'fa-sitemap' },
   { id: 'cover-analyzer', title: 'Cover Feedback AI', description: 'Get AI-powered feedback on your book cover\'s marketability.', icon: 'fa-search-plus' },

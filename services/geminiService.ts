@@ -676,5 +676,112 @@ All generated copy (headlines, emails, ads) must be persuasive, emotionally reso
     return handleJsonResponse(response);
 };
 
+export const generateCompleteVideoMarketingPlan = async (formData: any): Promise<any> => {
+    const ai = getGenAI();
+    const { manuscriptText, metadata, authorGoal, platformTargets, tonePreference } = formData;
+
+    const prompt = `
+    ROLE: You are a senior product designer + AI workflow architect specializing in turning long-form text (like book manuscripts) into high-converting marketing videos for authors.
+
+    OBJECTIVE: Design a complete, end-to-end Marketing Video Creator plan. Take the uploaded manuscript excerpt and author-provided metadata, and output a ready-to-use marketing video asset plan as a comprehensive JSON object.
+
+    METADATA & GOALS:
+    - Book Title: ${metadata.title}
+    - Subtitle: ${metadata.subtitle}
+    - Genre: ${metadata.genre}
+    - Target Audience: ${metadata.targetAudience}
+    - Positioning Statement: ${metadata.positioningStatement}
+    - Author's Primary Goal: ${authorGoal}
+    - Target Platforms: ${platformTargets.join(', ')}
+    - Desired Tone/Style: ${tonePreference}
+
+    MANUSCRIPT EXCERPT:
+    ---
+    ${manuscriptText}
+    ---
+
+    TASK:
+    1.  **Analyze Manuscript:** Deeply analyze the manuscript to extract core themes, the book's promise, stakes, conflict, transformation, and key emotional hooks. Identify the ideal reader avatar and their pain points/desires. Pull out 5-10 standout quotes.
+    2.  **Generate Core Video Concept:** Create a "core" hero video concept. This includes 3-5 hook line options, a full script (30-60s variant) with narration and on-screen text cues, and CTA options tailored to the author's goal.
+    3.  **Generate Shot List:** Create a scene-by-scene visual direction breakdown for the core script, including A-roll and B-roll suggestions, pacing notes, and text overlay guidance.
+    4.  **Generate Derivative Micro-Videos:** Based on the analysis, generate 5 simple, distinct micro-video ideas (e.g., quote videos, theme spotlights) that can be quickly produced. For each, provide a brief concept and the text/quote to use.
+    5.  **Adapt for Platforms:** For each target platform specified (${platformTargets.join(', ')}), adapt the "core" video concept. Provide platform-specific duration notes, hook variants, caption text with hashtags, and thumbnail/title ideas where applicable.
+
+    Your final output MUST be a single, valid JSON object that strictly adheres to the provided schema. Do not include any explanatory text outside of the JSON structure.
+    `;
+
+    const response = await ai.models.generateContent({
+        model: 'gemini-2.5-pro',
+        contents: prompt,
+        config: {
+            responseMimeType: "application/json",
+            maxOutputTokens: 16384,
+            thinkingConfig: { thinkingBudget: 8192 },
+            responseSchema: {
+                type: Type.OBJECT,
+                properties: {
+                    manuscriptAnalysis: {
+                        type: Type.OBJECT,
+                        properties: {
+                            coreTheme: { type: Type.STRING },
+                            corePromise: { type: Type.STRING },
+                            mainConflict: { type: Type.STRING },
+                            emotionalHooks: { type: Type.ARRAY, items: { type: Type.STRING } },
+                            readerAvatar: { type: Type.STRING, description: "Detailed description of the ideal reader." },
+                            standoutQuotes: { type: Type.ARRAY, items: { type: Type.STRING } }
+                        }
+                    },
+                    coreVideoConcept: {
+                        type: Type.OBJECT,
+                        properties: {
+                            hookOptions: { type: Type.ARRAY, items: { type: Type.STRING } },
+                            script: { type: Type.STRING, description: "Full 30-60s script with [VOICEOVER] and [ON-SCREEN TEXT] cues." },
+                            ctaOptions: { type: Type.ARRAY, items: { type: Type.STRING } }
+                        }
+                    },
+                    shotList: {
+                        type: Type.ARRAY,
+                        items: {
+                            type: Type.OBJECT,
+                            properties: {
+                                scene: { type: Type.STRING, description: "e.g., Scene 1: The Hook" },
+                                scriptLine: { type: Type.STRING },
+                                bRollSuggestion: { type: Type.STRING },
+                                onScreenText: { type: Type.STRING },
+                                pacingNotes: { type: Type.STRING }
+                            }
+                        }
+                    },
+                    derivativeMicroVideos: {
+                        type: Type.ARRAY,
+                        items: {
+                            type: Type.OBJECT,
+                            properties: {
+                                conceptTitle: { type: Type.STRING },
+                                conceptDescription: { type: Type.STRING },
+                                textForVideo: { type: Type.STRING }
+                            }
+                        }
+                    },
+                    platformAdaptations: {
+                        type: Type.ARRAY,
+                        items: {
+                            type: Type.OBJECT,
+                            properties: {
+                                platform: { type: Type.STRING },
+                                hookVariant: { type: Type.STRING },
+                                captionText: { type: Type.STRING, description: "Includes hashtags." },
+                                thumbnailTitleIdea: { type: Type.STRING, description: "For YouTube, etc." }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+    });
+
+    return handleJsonResponse(response);
+};
+
 
 export { GoogleGenAI };
