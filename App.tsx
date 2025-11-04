@@ -18,6 +18,7 @@ import { Tool, User } from './types';
 import { LoginScreen } from './components/LoginScreen';
 import { FunnelBuilder } from './components/FunnelBuilder';
 import { MarketingVideoCreator } from './components/MarketingVideoCreator';
+import { SalesAnalytics } from './components/SalesAnalytics';
 
 const App: React.FC = () => {
   const [activeTool, setActiveTool] = useState<Tool | null>(null);
@@ -63,6 +64,8 @@ const App: React.FC = () => {
         return <AudienceAnalyzer />;
       case 'website-builder':
         return <WebsiteBuilder />;
+      case 'sales-analytics':
+        return <SalesAnalytics user={user!} />;
       default:
         return <Dashboard setActiveTool={setActiveTool} user={user!} />;
     }

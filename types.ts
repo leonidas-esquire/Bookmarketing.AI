@@ -16,6 +16,15 @@ export interface User {
   genre: string;
 }
 
+export interface SalesRecord {
+  date: string; // ISO string 'YYYY-MM-DD'
+  unitsSold: number;
+  revenue: number;
+  retailer: string;
+  country: string;
+}
+
+
 // Fix: Centralized the AIStudio interface and global window declaration
 // to resolve a duplicate declaration error. This is now the single source of truth.
 declare global {
