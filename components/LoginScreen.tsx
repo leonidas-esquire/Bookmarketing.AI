@@ -28,6 +28,7 @@ const Step1: React.FC<{ onNext: () => void }> = ({ onNext }) => (
             Let's Get Started <i className="fas fa-arrow-right ml-2"></i>
             </button>
         </div>
+        <p className="mt-4 text-xs text-gray-500">v1.1</p>
     </div>
 );
 
