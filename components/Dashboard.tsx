@@ -27,6 +27,11 @@ const tools: Tool[] = [
   { id: 'website-builder', title: 'Author Hub Builder', description: 'Integrate all your marketing channels into a high-converting, central author website.', icon: 'fa-desktop' },
   { id: 'direct-sales-channel', title: 'Author Sales Platform', description: 'Systematically scale your income by selling your book directly to readers with a high-converting checkout.', icon: 'fa-store' },
   { id: 'audio-transcriber', title: 'Content Scaler AI', description: 'Transcribe spoken ideas into blog posts, social media updates, and newsletters to scale content production.', icon: 'fa-clone' },
+
+  // PR & Outreach
+  { id: 'influencer-outreach', title: 'Influencer AI Connect', description: 'Identify and connect with ideal influencers and build partnership strategies to amplify your book\'s reach.', icon: 'fa-handshake', comingSoon: true },
+  { id: 'pr-campaign', title: 'Media & PR Strategist', description: 'Develop a comprehensive PR campaign, from media targeting to crafting compelling story angles.', icon: 'fa-newspaper', comingSoon: true },
+  { id: 'media-kit-creator', title: 'Press Kit Pro', description: 'Instantly generate a professional press release and a complete media kit for your book launch.', icon: 'fa-briefcase', comingSoon: true },
 ];
 
 export const Dashboard: React.FC<DashboardProps> = ({ setActiveTool, user, activeBook }) => {
