@@ -18,6 +18,16 @@ const fileToBase64 = (file: File): Promise<string> => {
   });
 };
 
+const tonePreferences = [
+    'None',
+    'Epic & Cinematic',
+    'Intimate & Personal',
+    'Inspirational & Uplifting',
+    'Mysterious & Suspenseful',
+    'Playful & Humorous',
+    'Fast-Paced & Energetic'
+];
+
 
 export const VideoGenerator: React.FC = () => {
   const [mode, setMode] = useState<'text' | 'image'>('text');
@@ -25,6 +35,7 @@ export const VideoGenerator: React.FC = () => {
   const [imageFile, setImageFile] = useState<{file: File, url: string} | null>(null);
   const [aspectRatio, setAspectRatio] = useState<'16:9' | '9:16'>('16:9');
   const [resolution, setResolution] = useState<'720p' | '1080p'>('720p');
+  const [tone, setTone] = useState<string>(tonePreferences[0]);
   const [generatedVideo, setGeneratedVideo] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -78,12 +89,17 @@ export const VideoGenerator: React.FC = () => {
     setGeneratedVideo(null);
     
     try {
+      let finalPrompt = prompt;
+      if (tone !== 'None') {
+          finalPrompt = `Create a ${tone.toLowerCase()} video of: ${prompt}`;
+      }
+
       let videoUrl;
       if (mode === 'image' && imageFile) {
         const base64 = await fileToBase64(imageFile.file);
-        videoUrl = await generateVideoFromImage(prompt, base64, imageFile.file.type, aspectRatio, resolution);
+        videoUrl = await generateVideoFromImage(finalPrompt, base64, imageFile.file.type, aspectRatio, resolution);
       } else {
-        videoUrl = await generateVideoFromText(prompt, aspectRatio, resolution);
+        videoUrl = await generateVideoFromText(finalPrompt, aspectRatio, resolution);
       }
       setGeneratedVideo(videoUrl);
     } catch (e: any) {
@@ -102,7 +118,7 @@ export const VideoGenerator: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto p-4 animate-fade-in">
       <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold">Book Trailer Creator</h2>
+        <h2 className="text-3xl font-bold">Viral Video Generator</h2>
         <p className="text-indigo-200">Create short video clips from text or by animating your cover.</p>
       </div>
 
@@ -134,8 +150,8 @@ export const VideoGenerator: React.FC = () => {
           placeholder={mode === 'text' ? "e.g., A lone astronaut discovering a glowing alien artifact on a desolate moon." : "e.g., The character on the cover blinks, subtle wind blows through the trees in the background."}
           className="w-full p-3 bg-gray-700 border border-gray-600 rounded-md mb-4 focus:ring-2 focus:ring-indigo-500 focus:outline-none h-28"
         />
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-grow">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div>
             <label htmlFor="aspect-ratio-vid" className="block text-sm font-medium text-indigo-200 mb-1">Aspect Ratio</label>
             <select
               id="aspect-ratio-vid"
@@ -147,7 +163,7 @@ export const VideoGenerator: React.FC = () => {
               <option value="9:16">9:16 (Portrait)</option>
             </select>
           </div>
-          <div className="flex-grow">
+          <div>
             <label htmlFor="resolution-vid" className="block text-sm font-medium text-indigo-200 mb-1">Resolution</label>
             <select
               id="resolution-vid"
@@ -159,10 +175,23 @@ export const VideoGenerator: React.FC = () => {
               <option value="1080p">1080p (High Quality)</option>
             </select>
           </div>
+          <div>
+            <label htmlFor="tone-vid" className="block text-sm font-medium text-indigo-200 mb-1">Tone & Style</label>
+            <select
+              id="tone-vid"
+              value={tone}
+              onChange={(e) => setTone(e.target.value)}
+              className="w-full p-3 bg-gray-700 border border-gray-600 rounded-md focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+            >
+              {tonePreferences.map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
+          </div>
+        </div>
+        <div className="flex justify-end">
           <button
             onClick={handleGenerate}
             disabled={isLoading || !apiKeySelected}
-            className="w-full sm:w-auto self-end px-6 py-3 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 transition-colors disabled:bg-indigo-800 disabled:cursor-not-allowed"
+            className="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 transition-colors disabled:bg-indigo-800 disabled:cursor-not-allowed"
           >
             {isLoading ? 'Generating...' : 'Generate Video'}
           </button>

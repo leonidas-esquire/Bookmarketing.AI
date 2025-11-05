@@ -88,7 +88,7 @@ const App: React.FC = () => {
   const activeSalesPageConfig = activeBookId ? salesPageConfigs[activeBookId] || null : null;
 
 
-  const handleLogin = (userData?: { name: string; bookTitle: string; genre: string; }) => {
+  const handleLogin = (userData?: { name: string; email: string; bookTitle: string; genre: string; }) => {
     // If userData is provided, it's a new user registration
     if (userData) {
       const firstBook: Book = {
@@ -99,6 +99,7 @@ const App: React.FC = () => {
       
       setUser({
         name: userData.name,
+        email: userData.email,
         avatarUrl: `https://api.dicebear.com/8.x/initials/svg?seed=${encodeURIComponent(userData.name)}`,
         books: [firstBook]
       });

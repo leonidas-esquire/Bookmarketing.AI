@@ -312,6 +312,7 @@ TASK: Execute the following 4-step process. Your final output MUST be a single, 
         config: {
             responseMimeType: "application/json",
             maxOutputTokens: 16384,
+            thinkingConfig: { thinkingBudget: 16384 },
             responseSchema: {
                 type: Type.OBJECT,
                 properties: {
