@@ -79,7 +79,7 @@ export const MarketingVideoCreator: React.FC = () => {
         }
         setStep('generating');
         setError(null);
-        setProgressMessage('Initiating video plan generation...');
+        setProgressMessage('Generating your complete video marketing blueprint...');
         try {
             const formData = {
                 manuscriptFile,
@@ -106,7 +106,7 @@ export const MarketingVideoCreator: React.FC = () => {
     };
     
     if (step === 'generating') {
-        return <div className="max-w-4xl mx-auto"><LoadingSpinner message={progressMessage || "Your AI Video Architect is crafting a comprehensive marketing plan..."} /></div>;
+        return <div className="max-w-4xl mx-auto"><LoadingSpinner message={progressMessage} /></div>;
     }
 
     if (step === 'results' && videoPlan) {

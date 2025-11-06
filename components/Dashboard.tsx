@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Tool, User, Book } from '../types';
 import { ToolCard } from './ToolCard';
@@ -27,6 +26,8 @@ const tools: Tool[] = [
   { id: 'website-builder', title: 'Author Hub Builder', description: 'Integrate all your marketing channels into a high-converting, central author website.', icon: 'fa-desktop' },
   { id: 'direct-sales-channel', title: 'Author Sales Platform', description: 'Systematically scale your income by selling your book directly to readers with a high-converting checkout.', icon: 'fa-store' },
   { id: 'audio-transcriber', title: 'Content Scaler AI', description: 'Transcribe spoken ideas into blog posts, social media updates, and newsletters to scale content production.', icon: 'fa-clone' },
+  { id: 'book-distributor', title: 'Book Distributor', description: 'Generate and send professional ONIX metadata packages to major retailers.', icon: 'fa-rocket' },
+
 
   // PR & Outreach
   { id: 'influencer-outreach', title: 'Influencer AI Connect', description: 'Identify and connect with ideal influencers and build partnership strategies to amplify your book\'s reach.', icon: 'fa-handshake', comingSoon: true },

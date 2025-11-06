@@ -25,12 +25,13 @@ export const FunnelBuilder: React.FC = () => {
         setIsLoading(true);
         setError(null);
         setFunnelPlan(null);
-        setProgressMessage('Initiating funnel generation...');
+        setProgressMessage('Architecting your complete sales funnel... This may take a moment.');
         try {
+            // The onProgress callback is now optional and mainly for start/end messages
             const result = await generateSalesFunnel(manuscriptFile, setProgressMessage);
             setFunnelPlan(result);
-        } catch (e) {
-            setError('Failed to generate the sales funnel. The file may be invalid or the analysis failed. Please try again.');
+        } catch (e: any) {
+            setError(`Failed to generate the sales funnel: ${e.message}`);
             console.error(e);
         } finally {
             setIsLoading(false);

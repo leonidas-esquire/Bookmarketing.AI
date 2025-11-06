@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { CampaignGenerator } from './AudienceAnalyzer';
 import { BookDistributor } from './BookDistributor';
@@ -14,9 +13,9 @@ interface LeftSidebarProps {
 
 const tabs = [
     { id: 'campaign-generator', title: 'Audience & Campaign Generator', icon: 'fa-brain' },
+    { id: 'marketing-video-creator', title: 'Marketing Video Creator', icon: 'fa-bullhorn' },
     { id: 'book-distributor', title: 'Book Distributor', icon: 'fa-rocket' },
     { id: 'sales-analytics', title: 'Sales Analytics', icon: 'fa-dollar-sign' },
-    { id: 'marketing-video-creator', title: 'Marketing Video Creator', icon: 'fa-bullhorn' },
 ];
 
 export const LeftSidebar: React.FC<LeftSidebarProps> = ({ user, salesData, activeBook }) => {

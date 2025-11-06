@@ -69,12 +69,12 @@ export const WebsiteBuilder: React.FC = () => {
         setIsLoading(true);
         setError(null);
         setWebsitePlan(null);
-        setProgressMessage('Initiating website plan...');
+        setProgressMessage('Generating your complete website blueprint...');
         try {
             const plan = await generateWebsitePlan(pdfFile, setProgressMessage);
             setWebsitePlan(plan);
-        } catch (e) {
-            setError('Failed to generate the website plan. The PDF might be too complex or corrupted. Please try again.');
+        } catch (e: any) {
+            setError(`Failed to generate the website plan. ${e.message}`);
             console.error(e);
         } finally {
             setIsLoading(false);
@@ -177,7 +177,7 @@ export const WebsiteBuilder: React.FC = () => {
                     </div>
 
                     {error && <p className="text-red-400 mt-4 text-center">{error}</p>}
-                    {isLoading && <LoadingSpinner message={progressMessage || "Analyzing your book..."} />}
+                    {isLoading && <LoadingSpinner message={progressMessage} />}
                 </div>
             )}
             {websitePlan && !isLoading && renderPlan(websitePlan)}

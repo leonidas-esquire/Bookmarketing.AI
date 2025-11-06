@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { Dashboard } from './components/Dashboard';
@@ -22,6 +21,9 @@ import { LeftSidebar } from './components/LeftSidebar';
 import { AddBookModal } from './components/AddBookModal';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { ConfirmationModal } from './components/ConfirmationModal';
+import { BookDistributor } from './components/BookDistributor';
+import { CampaignGenerator } from './components/AudienceAnalyzer';
+import { MarketingVideoCreator } from './components/MarketingVideoCreator';
 
 
 const App: React.FC = () => {
@@ -226,6 +228,8 @@ const App: React.FC = () => {
         return <AudioTranscriber />;
       case 'website-builder':
         return <WebsiteBuilder />;
+      case 'book-distributor':
+        return <BookDistributor />;
       case 'direct-sales-channel':
         return <DirectSalesChannel 
             book={activeBook} 
@@ -233,6 +237,10 @@ const App: React.FC = () => {
             config={activeSalesPageConfig}
             onViewSalesPage={() => setActiveView('salesPage')}
         />;
+      case 'campaign-generator': 
+        return <CampaignGenerator />;
+      case 'marketing-video-creator':
+        return <MarketingVideoCreator />;
       default:
         return <Dashboard setActiveTool={setActiveTool} user={user!} activeBook={activeBook} />;
     }

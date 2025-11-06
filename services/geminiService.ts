@@ -270,7 +270,6 @@ export const generateContent = async (prompt: string, model: 'gemini-2.5-pro' | 
     return response.text;
 };
 
-// FIX: Added researchWithGoogle function to enable market research feature.
 export const researchWithGoogle = async (query: string): Promise<{ text: string, sources: any[] }> => {
     const ai = getGenAI();
     const response: GenerateContentResponse = await apiCallWrapper(() => ai.models.generateContent({
@@ -287,7 +286,6 @@ export const researchWithGoogle = async (query: string): Promise<{ text: string,
     return { text, sources };
 };
 
-// FIX: Added getChatInstance function to support the marketing chatbot.
 let chatInstance: Chat | null = null;
 
 export const getChatInstance = (): Chat => {
@@ -303,7 +301,6 @@ export const getChatInstance = (): Chat => {
     return chatInstance;
 };
 
-// FIX: Added audio decoding helpers for speech generation.
 function decode(base64: string): Uint8Array {
     const binaryString = atob(base64);
     const len = binaryString.length;
@@ -333,7 +330,6 @@ async function decodeAudioData(
     return buffer;
 }
 
-// FIX: Added generateSpeech function for the audiobook sample creator.
 export const generateSpeech = async (text: string, voiceName: string): Promise<AudioBuffer> => {
     const ai = getGenAI();
     const response: GenerateContentResponse = await apiCallWrapper(() => ai.models.generateContent({
@@ -406,14 +402,6 @@ export const analyzeManuscript = async (manuscriptFile: File): Promise<string> =
     return response.text;
 };
 
-
-const CAMPAIGN_BASE_PROMPT = `
-ROLE: You are "Athena", a world-class AI marketing strategist and campaign architect.
-
-OBJECTIVE: I have provided a comprehensive "Book DNA" analysis document, which contains a deep literary and market analysis of a book. Your task is to use ONLY this analysis to generate a complete go-to-market strategy. The goal is to create a plan that could realistically help the author reach one million readers. Your recommendations must be specific, actionable, and directly derived from the provided analysis.
-
-Your final output MUST be a single, valid JSON object that strictly adheres to the provided schema. Do not include any explanatory text outside of the JSON structure.
-`;
 
 const FULL_CAMPAIGN_SCHEMA = {
     type: Type.OBJECT,
@@ -647,125 +635,174 @@ const FULL_CAMPAIGN_SCHEMA = {
     }
 };
 
+const CAMPAIGN_PART1_SCHEMA = {
+    type: Type.OBJECT,
+    properties: {
+        step1_bookAnalysis: FULL_CAMPAIGN_SCHEMA.properties.step1_bookAnalysis,
+        step2_campaignArchitecture: FULL_CAMPAIGN_SCHEMA.properties.step2_campaignArchitecture,
+    }
+};
+
+const CAMPAIGN_PART2_SCHEMA = {
+    type: Type.OBJECT,
+    properties: {
+        step3_multiChannelCampaigns: FULL_CAMPAIGN_SCHEMA.properties.step3_multiChannelCampaigns,
+        step4_assetGeneration: FULL_CAMPAIGN_SCHEMA.properties.step4_assetGeneration,
+    }
+};
+
 export const generateFullCampaignPlan = async (analysisText: string, onProgress: (progress: { message: string }) => void): Promise<any> => {
     const ai = getGenAI();
-    onProgress({ message: "Building your comprehensive marketing plan... This is a complex task and may take up to a minute." });
 
-    const prompt = `
+    // --- Call 1: Analysis and Architecture ---
+    onProgress({ message: "Step 1 of 2: Analyzing book DNA and architecting campaign structure..." });
+    const prompt1 = `
     ROLE: You are "Athena", a world-class AI marketing strategist and campaign architect.
-
-    OBJECTIVE: I have provided a comprehensive "Book DNA" analysis document, which contains a deep literary and market analysis of a book. Your task is to use ONLY this analysis to generate a complete go-to-market strategy. The goal is to create a plan that could realistically help the author reach one million readers. Your recommendations must be specific, actionable, and directly derived from the provided analysis.
-
-    TASK: Generate a complete, multi-stage marketing campaign plan based on the provided "Book DNA" analysis. Your output must be a single, comprehensive JSON object that includes all four top-level keys: "step1_bookAnalysis", "step2_campaignArchitecture", "step3_multiChannelCampaigns", and "step4_assetGeneration". Fill out every field in the provided schema with detailed, actionable, and creative marketing strategies tailored to the book.
+    OBJECTIVE: I have provided a comprehensive "Book DNA" analysis document. Your task is to use ONLY this analysis to generate the first half of a go-to-market strategy, focusing on deep analysis and high-level campaign architecture.
+    TASK: Generate the "step1_bookAnalysis" and "step2_campaignArchitecture" sections of the marketing plan. Your output must be a single, valid JSON object that strictly adheres to the provided schema for these two sections.
     `;
-
-    const modelConfig = {
+    const modelConfig1 = {
         model: 'gemini-2.5-pro',
-        contents: { parts: [{ text: prompt }, { text: analysisText }] },
+        contents: { parts: [{ text: prompt1 }, { text: analysisText }] },
         config: {
             responseMimeType: "application/json",
-            responseSchema: FULL_CAMPAIGN_SCHEMA,
+            responseSchema: CAMPAIGN_PART1_SCHEMA,
             maxOutputTokens: 8192,
-            thinkingConfig: { thinkingBudget: 8192 } 
+            thinkingConfig: { thinkingBudget: 8192 }
         },
     };
-    
-    const response: GenerateContentResponse = await apiCallWrapper(() => ai.models.generateContent(modelConfig), 'Full Campaign Plan Generation');
+    const response1: GenerateContentResponse = await apiCallWrapper(() => ai.models.generateContent(modelConfig1), 'Campaign Plan Generation (Part 1)');
+    const part1Result = handleJsonResponse(response1);
+
+    // --- Call 2: Multi-channel Strategy and Assets ---
+    onProgress({ message: "Step 2 of 2: Generating multi-channel strategies and creative assets..." });
+    const prompt2 = `
+    ROLE: You are "Athena", a world-class AI marketing strategist and campaign architect.
+    OBJECTIVE: I have provided the original "Book DNA" analysis and the first half of a marketing plan (Analysis & Architecture). Your task is to use ALL of this context to generate the second, more creative half of the strategy: detailed multi-channel campaigns and specific marketing assets.
+    TASK: Generate the "step3_multiChannelCampaigns" and "step4_assetGeneration" sections of the marketing plan. Your strategies must be directly inspired by the provided analysis. Your output must be a single, valid JSON object that strictly adheres to the provided schema for these two sections.
+
+    CONTEXT FROM PREVIOUS STEP:
+    ${JSON.stringify(part1Result, null, 2)}
+    `;
+    const modelConfig2 = {
+        model: 'gemini-2.5-pro',
+        contents: { parts: [{ text: prompt2 }, { text: analysisText }] },
+        config: {
+            responseMimeType: "application/json",
+            responseSchema: CAMPAIGN_PART2_SCHEMA,
+            maxOutputTokens: 8192,
+            thinkingConfig: { thinkingBudget: 8192 }
+        },
+    };
+    const response2: GenerateContentResponse = await apiCallWrapper(() => ai.models.generateContent(modelConfig2), 'Campaign Plan Generation (Part 2)');
+    const part2Result = handleJsonResponse(response2);
     
     onProgress({ message: "Finalizing your plan..." });
-    return handleJsonResponse(response);
+    // --- Combine and return ---
+    return { ...part1Result, ...part2Result };
+};
+
+
+const FULL_WEBSITE_SCHEMA = {
+    type: Type.OBJECT,
+    properties: {
+        siteTitle: { type: Type.STRING, description: "A catchy title for the website, e.g., 'The World of [Book Title]' or '[Author Name] - Official Site'." },
+        colorPalette: {
+            type: Type.OBJECT,
+            description: "A color scheme that reflects the book's mood.",
+            properties: {
+                primary: { type: Type.STRING, description: "Primary color hex code, for buttons and links." },
+                secondary: { type: Type.STRING, description: "Secondary color hex code, for accents." },
+                background: { type: Type.STRING, description: "Background color hex code for main sections." },
+                text: { type: Type.STRING, description: "Main text color hex code." },
+                heading: { type: Type.STRING, description: "Heading text color hex code." }
+            }
+        },
+        typography: {
+            type: Type.OBJECT,
+            description: "Font pairings that match the book's genre.",
+            properties: {
+                headingFont: { type: Type.STRING, description: "Google Font name for headings (e.g., 'Merriweather')." },
+                bodyFont: { type: Type.STRING, description: "Google Font name for body text (e.g., 'Lato')." }
+            }
+        },
+        heroSection: {
+            type: Type.OBJECT,
+            description: "The first thing a visitor sees. It should be impactful.",
+            properties: {
+                headline: { type: Type.STRING, description: "A compelling headline that grabs attention." },
+                subheadline: { type: Type.STRING, description: "A subheadline that elaborates on the book's promise." },
+                callToAction: { type: Type.STRING, description: "Text for the main call-to-action button, e.g., 'Buy Now' or 'Explore the Story'." }
+            }
+        },
+        aboutTheBookSection: {
+            type: Type.OBJECT,
+            description: "A section to sell the book itself.",
+            properties: {
+                summary: { type: Type.STRING, description: "An extended, enticing summary of the book." },
+                keyThemes: { type: Type.ARRAY, items: { type: Type.STRING }, description: "A list of 3-5 key themes explored in the book." }
+            }
+        },
+        aboutTheAuthorSection: {
+            type: Type.OBJECT,
+            description: "A section to connect the reader with the author.",
+            properties: {
+                bioSuggestion: { type: Type.STRING, description: "A short paragraph suggesting how the author should frame their bio to connect with readers of this book." },
+                photoStyle: { type: Type.STRING, description: "A suggestion for the author's photo style (e.g., 'Professional and serious', 'Friendly and approachable', 'Mysterious and atmospheric')." }
+            }
+        },
+        leadMagnetIdea: {
+            type: Type.OBJECT,
+            description: "An idea to capture email sign-ups.",
+            properties: {
+                title: { type: Type.STRING, description: "Title of the lead magnet, e.g., 'Free Bonus Chapter'." },
+                description: { type: Type.STRING, description: "A short description to entice users to sign up." }
+            }
+        },
+    }
 };
 
 export const generateWebsitePlan = async (pdfFile: File, onProgress?: (message: string) => void): Promise<any> => {
     const ai = getGenAI();
     const pdfPart = await fileToGenerativePart(pdfFile);
+    onProgress?.("Designing visual identity, writing copy, and brainstorming ideas... this may take a moment.");
 
-    const basePrompt = `
+    const prompt = `
     Act as an expert web designer and book marketing strategist specializing in high-converting author websites. I have uploaded the manuscript of a book as a PDF.
-    Your task is to deeply analyze the book's content, genre, tone, and themes to generate a specific part of a comprehensive plan for an author website.
-    The output must be a JSON object conforming to the provided schema.`;
+    Your task is to deeply analyze the book's content, genre, tone, and themes to generate a comprehensive plan for an author website.
+    The output must be a single JSON object conforming to the provided schema, containing all sections: Visual Identity, Core Copywriting, Author Info, and Lead Generation ideas.
+    `;
     
-    const modelConfigBase = {
+    const modelConfig = {
         model: 'gemini-2.5-pro',
-        contents: { parts: [ { text: "" }, pdfPart ] },
+        contents: { parts: [ { text: prompt }, pdfPart ] },
         config: {
             responseMimeType: "application/json",
             maxOutputTokens: 8192,
-            thinkingConfig: { thinkingBudget: 4096 },
-            responseSchema: {},
+            thinkingConfig: { thinkingBudget: 8192 },
+            responseSchema: FULL_WEBSITE_SCHEMA,
         },
     };
     
-    const finalPlan: any = {};
-
-    // Step 1: Visual Identity & Core Concept
-    onProgress?.("Designing visual identity...");
-    const step1Prompt = `${basePrompt}\n\nTASK: Generate the visual identity and core site concept. This includes the site title, a color palette that reflects the book's mood (with hex codes), and readable Google Font pairings that match the genre.`;
-    const step1Config = JSON.parse(JSON.stringify(modelConfigBase));
-    step1Config.contents.parts[0].text = step1Prompt;
-    step1Config.config.responseSchema = {
-        type: Type.OBJECT,
-        properties: {
-            siteTitle: { type: Type.STRING, description: "A catchy title for the website, e.g., 'The World of [Book Title]' or '[Author Name] - Official Site'."},
-            colorPalette: { type: Type.OBJECT, description: "A color scheme that reflects the book's mood.", properties: { primary: { type: Type.STRING, description: "Primary color hex code, for buttons and links." }, secondary: { type: Type.STRING, description: "Secondary color hex code, for accents." }, background: { type: Type.STRING, description: "Background color hex code for main sections." }, text: { type: Type.STRING, description: "Main text color hex code." }, heading: { type: Type.STRING, description: "Heading text color hex code." } } },
-            typography: { type: Type.OBJECT, description: "Font pairings that match the book's genre.", properties: { headingFont: { type: Type.STRING, description: "Google Font name for headings (e.g., 'Merriweather')." }, bodyFont: { type: Type.STRING, description: "Google Font name for body text (e.g., 'Lato')." } } },
-        }
-    };
-    const step1Response: GenerateContentResponse = await apiCallWrapper(() => ai.models.generateContent(step1Config), 'Website Plan Step 1: Visuals');
-    Object.assign(finalPlan, handleJsonResponse(step1Response));
-
-    // Step 2: Core Copywriting
-    onProgress?.("Writing core website copy...");
-    const step2Prompt = `${basePrompt}\n\nTASK: Generate the core copywriting for the website. This includes a compelling hero section (headline, subheadline, call-to-action) and an enticing summary for the 'About the Book' section, including 3-5 key themes.`;
-    const step2Config = JSON.parse(JSON.stringify(modelConfigBase));
-    step2Config.contents.parts[0].text = step2Prompt;
-    step2Config.config.responseSchema = {
-        type: Type.OBJECT,
-        properties: {
-            heroSection: { type: Type.OBJECT, description: "The first thing a visitor sees. It should be impactful.", properties: { headline: { type: Type.STRING, description: "A compelling headline that grabs attention." }, subheadline: { type: Type.STRING, description: "A subheadline that elaborates on the book's promise." }, callToAction: { type: Type.STRING, description: "Text for the main call-to-action button, e.g., 'Buy Now' or 'Explore the Story'." } } },
-            aboutTheBookSection: { type: Type.OBJECT, description: "A section to sell the book itself.", properties: { summary: { type: Type.STRING, description: "An extended, enticing summary of the book." }, keyThemes: { type: Type.ARRAY, items: { type: Type.STRING }, description: "A list of 3-5 key themes explored in the book." } } },
-        }
-    };
-    const step2Response: GenerateContentResponse = await apiCallWrapper(() => ai.models.generateContent(step2Config), 'Website Plan Step 2: Copywriting');
-    Object.assign(finalPlan, handleJsonResponse(step2Response));
-
-    // Step 3: Author & Lead Gen
-    onProgress?.("Creating author bio and lead magnet...");
-    const step3Prompt = `${basePrompt}\n\nTASK: Generate content for the author and for email list building. This includes a suggestion for the author's bio and photo style, and a compelling idea for a lead magnet (e.g., a free chapter or checklist) to capture email sign-ups.`;
-    const step3Config = JSON.parse(JSON.stringify(modelConfigBase));
-    step3Config.contents.parts[0].text = step3Prompt;
-    step3Config.config.responseSchema = {
-        type: Type.OBJECT,
-        properties: {
-            aboutTheAuthorSection: { type: Type.OBJECT, description: "A section to connect the reader with the author.", properties: { bioSuggestion: { type: Type.STRING, description: "A short paragraph suggesting how the author should frame their bio to connect with readers of this book." }, photoStyle: { type: Type.STRING, description: "A suggestion for the author's photo style (e.g., 'Professional and serious', 'Friendly and approachable', 'Mysterious and atmospheric')." } } },
-            leadMagnetIdea: { type: Type.OBJECT, description: "An idea to capture email sign-ups.", properties: { title: { type: Type.STRING, description: "Title of the lead magnet, e.g., 'Free Bonus Chapter'." }, description: { type: Type.STRING, description: "A short description to entice users to sign up." } } },
-        }
-    };
-    const step3Response: GenerateContentResponse = await apiCallWrapper(() => ai.models.generateContent(step3Config), 'Website Plan Step 3: Author/LeadGen');
-    Object.assign(finalPlan, handleJsonResponse(step3Response));
-
-    return finalPlan;
+    const response: GenerateContentResponse = await apiCallWrapper(() => ai.models.generateContent(modelConfig), 'Website Plan Generation');
+    
+    onProgress?.("Finalizing website plan...");
+    return handleJsonResponse(response);
 };
 
 const FUNNEL_BASE_PROMPT = `
 Act as an expert 7-figure marketing funnel architect specializing in high-conversion book launches.
-I have provided a book manuscript. Your task is to analyze its content, tone, and themes to generate a specific part of a complete, high-converting sales funnel plan.
-The output must be a detailed JSON object conforming to the provided schema.
+I have provided a book manuscript. Your task is to analyze its content, tone, and themes to generate a complete, high-converting sales funnel plan.
+The output must be a detailed, single JSON object conforming to the provided schema.
 All generated copy (headlines, emails, ads) must be persuasive, emotionally resonant, and perfectly tailored to the book's ideal reader.
+The email sequence must guide a new subscriber from awareness to purchasing the book, following this structure:
+- Email 1 (Day 1): Deliver lead magnet, build rapport.
+- Email 2 (Day 3): Introduce the core problem the book solves.
+- Email 3 (Day 5): Share a valuable insight related to the book's theme.
+- Email 4 (Day 7): Soft pitch for the book, introduce the main conflict/characters.
+- Email 5 (Day 9): Hard pitch with social proof or urgency.
 `;
 
-const FUNNEL_STEP3_EMAIL_PROMPT = (emailNumber: number, totalEmails: number) => `
-TASK: Write email #${emailNumber} of a ${totalEmails}-part "Nurture & Sell" sequence. The sequence should guide a new subscriber from awareness to purchasing the book.
--   **Email 1 (Day 1):** Deliver lead magnet, build rapport.
--   **Email 2 (Day 3):** Introduce the core problem the book solves.
--   **Email 3 (Day 5):** Share a valuable insight related to the book's theme.
--   **Email 4 (Day 7):** Soft pitch for the book, introduce the main conflict/characters.
--   **Email 5 (Day 9):** Hard pitch with social proof or urgency.
-
-Focus ONLY on generating the content for Email #${emailNumber}. The 'day' property should reflect its place in the sequence.
-`;
-
-// FIX: Added FULL_FUNNEL_SCHEMA to resolve undefined variable errors in generateSalesFunnel.
 const FULL_FUNNEL_SCHEMA = {
     type: Type.OBJECT,
     properties: {
@@ -809,6 +846,7 @@ const FULL_FUNNEL_SCHEMA = {
                 },
                 emailNurtureSequence: {
                     type: Type.ARRAY,
+                    description: "A 5-part email sequence.",
                     items: {
                         type: Type.OBJECT,
                         properties: {
@@ -855,106 +893,26 @@ const FULL_FUNNEL_SCHEMA = {
 
 export const generateSalesFunnel = async (manuscriptFile: File, onProgress?: (message: string) => void): Promise<any> => {
     const ai = getGenAI();
+    onProgress?.("Architecting your complete sales funnel... This may take a moment.");
     const manuscriptPart = await fileToGenerativePart(manuscriptFile);
 
-    const modelConfigBase = {
+    const modelConfig = {
         model: 'gemini-2.5-pro',
-        contents: { parts: [{ text: "" }, manuscriptPart] },
+        contents: { parts: [{ text: FUNNEL_BASE_PROMPT }, manuscriptPart] },
         config: {
             responseMimeType: "application/json",
             maxOutputTokens: 8192,
-            thinkingConfig: { thinkingBudget: 4096 },
-            responseSchema: {}
+            thinkingConfig: { thinkingBudget: 8192 },
+            responseSchema: FULL_FUNNEL_SCHEMA
         },
     };
 
-    const finalFunnelPlan: any = {};
-
-    // Step 1: High-level strategy
-    onProgress?.("Architecting high-level strategy...");
-    const step1_strategy_Config = JSON.parse(JSON.stringify(modelConfigBase));
-    step1_strategy_Config.contents.parts[0].text = FUNNEL_BASE_PROMPT + '\n' + "TASK: Generate the high-level funnel strategy. This includes a catchy funnel name, a summary of the target audience, and a compelling lead magnet idea (title, description, format).";
-    step1_strategy_Config.config.responseSchema = {
-        type: Type.OBJECT,
-        properties: {
-            funnelName: FULL_FUNNEL_SCHEMA.properties.funnelName,
-            targetAudienceSummary: FULL_FUNNEL_SCHEMA.properties.targetAudienceSummary,
-            topOfFunnel: { type: Type.OBJECT, properties: { leadMagnet: FULL_FUNNEL_SCHEMA.properties.topOfFunnel.properties.leadMagnet } },
-        }
-    };
-    const step1_strategy_Response: GenerateContentResponse = await apiCallWrapper(() => ai.models.generateContent(step1_strategy_Config), 'Sales Funnel Step 1a: Strategy');
-    Object.assign(finalFunnelPlan, handleJsonResponse(step1_strategy_Response));
-
-    // Step 2: Landing Page Copy
-    onProgress?.("Writing landing page copy...");
-    const contextForLP = `CONTEXT: The lead magnet is titled "${finalFunnelPlan.topOfFunnel?.leadMagnet?.title}" and is a ${finalFunnelPlan.topOfFunnel?.leadMagnet?.format}.`;
-    const step2_lp_Config = JSON.parse(JSON.stringify(modelConfigBase));
-    step2_lp_Config.contents.parts[0].text = FUNNEL_BASE_PROMPT + '\n' + `TASK: Generate persuasive copy for the lead magnet landing page. This includes the main headline, subheadline, 3-5 benefit-driven bullet points, and a strong call-to-action for the sign-up button.\n\n${contextForLP}`;
-    step2_lp_Config.config.responseSchema = {
-        type: Type.OBJECT,
-        properties: {
-            middleOfFunnel: { type: Type.OBJECT, properties: { landingPage: FULL_FUNNEL_SCHEMA.properties.middleOfFunnel.properties.landingPage } },
-        }
-    };
-    const step2_lp_Response: GenerateContentResponse = await apiCallWrapper(() => ai.models.generateContent(step2_lp_Config), 'Sales Funnel Step 1b: Landing Page');
-    const lpResult = handleJsonResponse(step2_lp_Response);
-    // Merge result into the plan
-    if (lpResult.middleOfFunnel) {
-        if (!finalFunnelPlan.middleOfFunnel) finalFunnelPlan.middleOfFunnel = {};
-        finalFunnelPlan.middleOfFunnel.landingPage = lpResult.middleOfFunnel.landingPage;
-    }
+    const response: GenerateContentResponse = await apiCallWrapper(() => ai.models.generateContent(modelConfig), 'Sales Funnel Generation');
     
-    // Step 3: Sales Page & Offers
-    onProgress?.("Drafting sales page and offers...");
-    const step3_sales_Config = JSON.parse(JSON.stringify(modelConfigBase));
-    step3_sales_Config.contents.parts[0].text = FUNNEL_BASE_PROMPT + '\n' + `TASK: Generate the content for the bottom-of-funnel conversion assets. This includes the sales page (headline, video script hook, copy outline, CTA), an order bump idea, and a one-time-offer upsell idea.`;
-    step3_sales_Config.config.responseSchema = {
-        type: Type.OBJECT,
-        properties: {
-            bottomOfFunnel: FULL_FUNNEL_SCHEMA.properties.bottomOfFunnel
-        }
-    };
-    const step3_sales_Response: GenerateContentResponse = await apiCallWrapper(() => ai.models.generateContent(step3_sales_Config), 'Sales Funnel Step 1c: Sales Page');
-    Object.assign(finalFunnelPlan, handleJsonResponse(step3_sales_Response));
-
-
-    // Step 4: Generate Ad Copy
-    onProgress?.("Writing persuasive ad copy...");
-    const step4_ad_Config = JSON.parse(JSON.stringify(modelConfigBase));
-    step4_ad_Config.contents.parts[0].text = FUNNEL_BASE_PROMPT + '\n' + "TASK: Generate 3 persuasive ad copy variations (for platforms like Facebook, Instagram, TikTok) designed to drive traffic to the lead magnet landing page.";
-    step4_ad_Config.config.responseSchema = {
-        type: Type.OBJECT,
-        properties: {
-            adCopy: FULL_FUNNEL_SCHEMA.properties.topOfFunnel.properties.adCopy
-        }
-    };
-    const step4_ad_Response: GenerateContentResponse = await apiCallWrapper(() => ai.models.generateContent(step4_ad_Config), 'Sales Funnel Step 2: Ad Copy');
-    const adCopyResult = handleJsonResponse(step4_ad_Response);
-    if (!finalFunnelPlan.topOfFunnel) finalFunnelPlan.topOfFunnel = {};
-    finalFunnelPlan.topOfFunnel.adCopy = adCopyResult.adCopy;
-    
-    // Step 5: Generate Email Sequence
-    const emailNurtureSequence = [];
-    const NUM_EMAILS = 5;
-    const SINGLE_EMAIL_SCHEMA = FULL_FUNNEL_SCHEMA.properties.middleOfFunnel.properties.emailNurtureSequence.items;
-
-    for (let i = 1; i <= NUM_EMAILS; i++) {
-        onProgress?.(`Drafting nurture email ${i}/${NUM_EMAILS}...`);
-        const emailConfig = JSON.parse(JSON.stringify(modelConfigBase));
-        emailConfig.contents.parts[0].text = FUNNEL_BASE_PROMPT + '\n' + FUNNEL_STEP3_EMAIL_PROMPT(i, NUM_EMAILS);
-        emailConfig.config.responseSchema = SINGLE_EMAIL_SCHEMA;
-
-        const emailResponse: GenerateContentResponse = await apiCallWrapper(() => ai.models.generateContent(emailConfig), `Sales Funnel Step 3: Email ${i}`);
-        emailNurtureSequence.push(handleJsonResponse(emailResponse));
-    }
-    
-    if (!finalFunnelPlan.middleOfFunnel) finalFunnelPlan.middleOfFunnel = {};
-    finalFunnelPlan.middleOfFunnel.emailNurtureSequence = emailNurtureSequence;
-    
-    return finalFunnelPlan;
+    onProgress?.("Funnel generation complete!");
+    return handleJsonResponse(response);
 };
 
-// FIX: Added generateDistributionKit function to support the book distribution feature.
 export const generateDistributionKit = async (formData: any, onProgress: (message: string) => void): Promise<any> => {
     const ai = getGenAI();
     onProgress("Analyzing metadata and generating ONIX structure...");
@@ -1109,16 +1067,78 @@ export const generateDistributionKit = async (formData: any, onProgress: (messag
     return handleJsonResponse(response);
 };
 
+const FULL_VIDEO_PLAN_SCHEMA = {
+    type: Type.OBJECT,
+    properties: {
+        manuscriptAnalysis: {
+            type: Type.OBJECT,
+            properties: {
+                coreTheme: { type: Type.STRING },
+                corePromise: { type: Type.STRING },
+                mainConflict: { type: Type.STRING },
+                emotionalHooks: { type: Type.ARRAY, items: { type: Type.STRING } },
+                readerAvatar: { type: Type.STRING, description: "Detailed description of the ideal reader." },
+                standoutQuotes: { type: Type.ARRAY, items: { type: Type.STRING } }
+            }
+        },
+        coreVideoConcept: {
+            type: Type.OBJECT,
+            properties: {
+                hookOptions: { type: Type.ARRAY, items: { type: Type.STRING } },
+                script: { type: Type.STRING, description: "Full 30-60s script with [VOICEOVER] and [ON-SCREEN TEXT] cues." },
+                ctaOptions: { type: Type.ARRAY, items: { type: Type.STRING } }
+            }
+        },
+        shotList: {
+            type: Type.ARRAY,
+            items: {
+                type: Type.OBJECT,
+                properties: {
+                    scene: { type: Type.STRING, description: "e.g., Scene 1: The Hook" },
+                    scriptLine: { type: Type.STRING },
+                    bRollSuggestion: { type: Type.STRING },
+                    onScreenText: { type: Type.STRING },
+                    pacingNotes: { type: Type.STRING }
+                }
+            }
+        },
+        derivativeMicroVideos: {
+            type: Type.ARRAY,
+            items: {
+                type: Type.OBJECT,
+                properties: {
+                    conceptTitle: { type: Type.STRING },
+                    conceptDescription: { type: Type.STRING },
+                    textForVideo: { type: Type.STRING }
+                }
+            }
+        },
+        platformAdaptations: {
+            type: Type.ARRAY,
+            items: {
+                type: Type.OBJECT,
+                properties: {
+                    platform: { type: Type.STRING },
+                    hookVariant: { type: Type.STRING },
+                    captionText: { type: Type.STRING, description: "Includes hashtags." },
+                    thumbnailTitleIdea: { type: Type.STRING, description: "For YouTube, etc." }
+                }
+            }
+        }
+    }
+};
+
 export const generateCompleteVideoMarketingPlan = async (formData: any, onProgress?: (message: string) => void): Promise<any> => {
     const ai = getGenAI();
     const { manuscriptFile, metadata, authorGoal, platformTargets, tonePreference } = formData;
 
+    onProgress?.("Analyzing manuscript and creating your complete video marketing blueprint...");
     const manuscriptPart = await fileToGenerativePart(manuscriptFile);
 
-    const basePrompt = `
+    const prompt = `
     Act as a senior product designer + AI workflow architect specializing in turning long-form text (like book manuscripts) into high-converting marketing videos for authors.
 
-    OBJECTIVE: Design a specific part of a complete, end-to-end Marketing Video Creator plan. I have provided a manuscript file and author-provided metadata. Your output must be a ready-to-use JSON object for the requested step.
+    OBJECTIVE: Design a complete, end-to-end Marketing Video Creator plan in a single step. I have provided a manuscript file and author-provided metadata. Your output must be a single, ready-to-use JSON object that conforms to the provided schema.
 
     METADATA & GOALS:
     - Book Title: ${metadata.title}
@@ -1129,58 +1149,31 @@ export const generateCompleteVideoMarketingPlan = async (formData: any, onProgre
     - Author's Primary Goal: ${authorGoal}
     - Target Platforms: ${platformTargets.join(', ')}
     - Desired Tone/Style: ${tonePreference}
+
+    TASK: Perform all the following analyses and generations in one single JSON output:
+    1.  **Manuscript Analysis:** Deeply analyze the manuscript to extract core themes, the book's promise, stakes, conflict, transformation, and key emotional hooks. Identify the ideal reader avatar and pull out 5-10 standout quotes.
+    2.  **Core Video Concept & Script:** Based on the analysis, create a "core" hero video concept. This includes 3-5 hook line options, a full script (30-60s variant) with narration and on-screen text cues, and CTA options tailored to the author's goal.
+    3.  **Visuals & Derivatives:** Create a scene-by-scene visual direction breakdown (shot list) for the core script. Also, generate 5 distinct micro-video ideas (e.g., quote videos, theme spotlights) with a brief concept and the text/quote to use.
+    4.  **Platform Adaptations:** For each target platform specified (${platformTargets.join(', ')}), adapt the "core" video concept. Provide platform-specific duration notes, hook variants, caption text with hashtags, and thumbnail/title ideas where applicable.
+
+    Generate the entire plan as one cohesive JSON object.
     `;
 
-    const modelConfigBase = {
+    const modelConfig = {
         model: 'gemini-2.5-pro',
-        contents: { parts: [{ text: "" }, manuscriptPart] },
+        contents: { parts: [{ text: prompt }, manuscriptPart] },
         config: {
             responseMimeType: "application/json",
             maxOutputTokens: 8192,
-            thinkingConfig: { thinkingBudget: 4096 },
-            responseSchema: {},
+            thinkingConfig: { thinkingBudget: 8192 },
+            responseSchema: FULL_VIDEO_PLAN_SCHEMA,
         },
     };
     
-    const finalPlan: any = {};
-
-    // Step 1: Manuscript Analysis
-    onProgress?.("Analyzing manuscript for key hooks...");
-    const step1Prompt = `${basePrompt}\n\nTASK: Deeply analyze the manuscript to extract core themes, the book's promise, stakes, conflict, transformation, and key emotional hooks. Identify the ideal reader avatar and pull out 5-10 standout quotes.`;
-    const step1Config = JSON.parse(JSON.stringify(modelConfigBase));
-    step1Config.contents.parts[0].text = step1Prompt;
-    step1Config.config.responseSchema = { type: Type.OBJECT, properties: { manuscriptAnalysis: { type: Type.OBJECT, properties: { coreTheme: { type: Type.STRING }, corePromise: { type: Type.STRING }, mainConflict: { type: Type.STRING }, emotionalHooks: { type: Type.ARRAY, items: { type: Type.STRING } }, readerAvatar: { type: Type.STRING, description: "Detailed description of the ideal reader." }, standoutQuotes: { type: Type.ARRAY, items: { type: Type.STRING } } } } } };
-    const step1Response: GenerateContentResponse = await apiCallWrapper(() => ai.models.generateContent(step1Config), 'Video Plan Step 1: Analysis');
-    Object.assign(finalPlan, handleJsonResponse(step1Response));
-
-    // Step 2: Core Video Concept & Script
-    onProgress?.("Writing core video script...");
-    const step2Prompt = `${basePrompt}\n\nCONTEXT FROM ANALYSIS:\n${JSON.stringify(finalPlan.manuscriptAnalysis)}\n\nTASK: Based on the analysis, create a "core" hero video concept. This includes 3-5 hook line options, a full script (30-60s variant) with narration and on-screen text cues, and CTA options tailored to the author's goal.`;
-    const step2Config = JSON.parse(JSON.stringify(modelConfigBase));
-    step2Config.contents.parts[0].text = step2Prompt;
-    step2Config.config.responseSchema = { type: Type.OBJECT, properties: { coreVideoConcept: { type: Type.OBJECT, properties: { hookOptions: { type: Type.ARRAY, items: { type: Type.STRING } }, script: { type: Type.STRING, description: "Full 30-60s script with [VOICEOVER] and [ON-SCREEN TEXT] cues." }, ctaOptions: { type: Type.ARRAY, items: { type: Type.STRING } } } } } };
-    const step2Response: GenerateContentResponse = await apiCallWrapper(() => ai.models.generateContent(step2Config), 'Video Plan Step 2: Script');
-    Object.assign(finalPlan, handleJsonResponse(step2Response));
+    const response: GenerateContentResponse = await apiCallWrapper(() => ai.models.generateContent(modelConfig), 'Complete Video Marketing Plan Generation');
     
-    // Step 3: Visuals & Derivatives
-    onProgress?.("Creating shot list and micro-videos...");
-    const step3Prompt = `${basePrompt}\n\nCONTEXT FROM SCRIPT:\n${JSON.stringify(finalPlan.coreVideoConcept)}\n\nTASK: Create a scene-by-scene visual direction breakdown (shot list) for the core script. Also, generate 5 distinct micro-video ideas (e.g., quote videos, theme spotlights) with a brief concept and the text/quote to use.`;
-    const step3Config = JSON.parse(JSON.stringify(modelConfigBase));
-    step3Config.contents.parts[0].text = step3Prompt;
-    step3Config.config.responseSchema = { type: Type.OBJECT, properties: { shotList: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { scene: { type: Type.STRING, description: "e.g., Scene 1: The Hook" }, scriptLine: { type: Type.STRING }, bRollSuggestion: { type: Type.STRING }, onScreenText: { type: Type.STRING }, pacingNotes: { type: Type.STRING } } } }, derivativeMicroVideos: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { conceptTitle: { type: Type.STRING }, conceptDescription: { type: Type.STRING }, textForVideo: { type: Type.STRING } } } } } };
-    const step3Response: GenerateContentResponse = await apiCallWrapper(() => ai.models.generateContent(step3Config), 'Video Plan Step 3: Visuals');
-    Object.assign(finalPlan, handleJsonResponse(step3Response));
-
-    // Step 4: Platform Adaptations
-    onProgress?.("Adapting script for target platforms...");
-    const step4Prompt = `${basePrompt}\n\nCONTEXT OF CORE VIDEO:\n${JSON.stringify(finalPlan.coreVideoConcept)}\n\nTASK: For each target platform specified (${platformTargets.join(', ')}), adapt the "core" video concept. Provide platform-specific duration notes, hook variants, caption text with hashtags, and thumbnail/title ideas where applicable.`;
-    const step4Config = JSON.parse(JSON.stringify(modelConfigBase));
-    step4Config.contents.parts[0].text = step4Prompt;
-    step4Config.config.responseSchema = { type: Type.OBJECT, properties: { platformAdaptations: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { platform: { type: Type.STRING }, hookVariant: { type: Type.STRING }, captionText: { type: Type.STRING, description: "Includes hashtags." }, thumbnailTitleIdea: { type: Type.STRING, description: "For YouTube, etc." } } } } } };
-    const step4Response: GenerateContentResponse = await apiCallWrapper(() => ai.models.generateContent(step4Config), 'Video Plan Step 4: Adaptations');
-    Object.assign(finalPlan, handleJsonResponse(step4Response));
-    
-    return finalPlan;
+    onProgress?.("Video marketing plan finalized!");
+    return handleJsonResponse(response);
 };
 
 

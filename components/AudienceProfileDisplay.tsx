@@ -257,7 +257,7 @@ export const CampaignDisplay: React.FC<CampaignDisplayProps> = ({ plan, manuscri
             
             <div className="space-y-4">
                 {campaignSteps.map(step => (
-                    plan?.[step.key] && (
+                    plan?.[step.key] ? (
                         <CampaignStep
                             key={step.key}
                             title={step.title}
@@ -266,7 +266,7 @@ export const CampaignDisplay: React.FC<CampaignDisplayProps> = ({ plan, manuscri
                         >
                             {renderStepContent(step.key)}
                         </CampaignStep>
-                    )
+                    ) : null
                 ))}
             </div>
         </div>
