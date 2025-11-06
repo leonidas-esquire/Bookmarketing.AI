@@ -37,6 +37,7 @@ export const MarketingVideoCreator: React.FC = () => {
     const [step, setStep] = useState<'input' | 'generating' | 'results'>('input');
     const [error, setError] = useState<string | null>(null);
     const [videoPlan, setVideoPlan] = useState<any | null>(null);
+    const [progressMessage, setProgressMessage] = useState('');
 
     const [manuscriptFile, setManuscriptFile] = useState<File | null>(null);
     const [metadata, setMetadata] = useState({
@@ -78,6 +79,7 @@ export const MarketingVideoCreator: React.FC = () => {
         }
         setStep('generating');
         setError(null);
+        setProgressMessage('Initiating video plan generation...');
         try {
             const formData = {
                 manuscriptFile,
@@ -86,13 +88,15 @@ export const MarketingVideoCreator: React.FC = () => {
                 platformTargets: selectedPlatforms,
                 tonePreference,
             };
-            const plan = await generateCompleteVideoMarketingPlan(formData);
+            const plan = await generateCompleteVideoMarketingPlan(formData, setProgressMessage);
             setVideoPlan(plan);
             setStep('results');
         } catch (e: any) {
             setError(`Failed to generate the video plan. ${e.message}`);
             console.error(e);
             setStep('input');
+        } finally {
+            setProgressMessage('');
         }
     };
     
@@ -102,7 +106,7 @@ export const MarketingVideoCreator: React.FC = () => {
     };
     
     if (step === 'generating') {
-        return <div className="max-w-4xl mx-auto"><LoadingSpinner message="Your AI Video Architect is crafting a comprehensive marketing plan... This may take a moment." /></div>;
+        return <div className="max-w-4xl mx-auto"><LoadingSpinner message={progressMessage || "Your AI Video Architect is crafting a comprehensive marketing plan..."} /></div>;
     }
 
     if (step === 'results' && videoPlan) {

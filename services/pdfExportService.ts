@@ -191,12 +191,14 @@ class PdfBuilder {
 
         this.addH2('24-Hour Launch Plan');
         this.plan.step2_campaignArchitecture.launchPlan_24Hour.forEach((item: any) => {
-            this.addBody(`[${item.hour}] ${item.action}: ${item.details}`);
+            this.addH3(item.hour);
+            this.addBody(`Task: ${item.task}\nPlatform: ${item.platform}\nObjective: ${item.objective}`);
         });
 
         this.addH2('30-Day Momentum Plan');
         this.plan.step2_campaignArchitecture.momentumPlan_30Day.forEach((item: any) => {
-            this.addBody(`[${item.day}] ${item.action}: ${item.details}`);
+            this.addH3(item.day);
+            this.addBody(`Task: ${item.task}\nPlatform: ${item.platform}\nObjective: ${item.objective}`);
         });
         
         this.addH2('90-Day Viral Expansion');

@@ -34,6 +34,12 @@ export const AudioTranscriber: React.FC = () => {
     const scriptProcessorRef = useRef<ScriptProcessorNode | null>(null);
     const mediaStreamSourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
     
+    // Refs for batching audio chunks to prevent hitting API rate limits
+    const audioBufferQueueRef = useRef<Float32Array[]>([]);
+    // The script processor sends chunks of 4096 samples at 16000Hz, which is ~4 times per second.
+    // Batching 8 chunks sends a request roughly every 2 seconds, reducing RPM from ~240 to a safe ~30.
+    const CHUNK_BATCH_SIZE = 8;
+    
     const stopRecording = useCallback(() => {
         if (streamRef.current) {
             streamRef.current.getTracks().forEach(track => track.stop());
@@ -55,6 +61,7 @@ export const AudioTranscriber: React.FC = () => {
             sessionPromiseRef.current.then(session => session.close());
             sessionPromiseRef.current = null;
         }
+        audioBufferQueueRef.current = []; // Clear any pending audio chunks
         setIsRecording(false);
     }, []);
 
@@ -84,11 +91,26 @@ export const AudioTranscriber: React.FC = () => {
 
                         scriptProcessorRef.current.onaudioprocess = (audioProcessingEvent) => {
                             const inputData = audioProcessingEvent.inputBuffer.getChannelData(0);
-                            const pcmBlob = createBlob(inputData);
-                            if (sessionPromiseRef.current) {
-                                sessionPromiseRef.current.then((session) => {
-                                    session.sendRealtimeInput({ media: pcmBlob });
-                                });
+                            audioBufferQueueRef.current.push(new Float32Array(inputData));
+
+                            if (audioBufferQueueRef.current.length >= CHUNK_BATCH_SIZE) {
+                                const chunksToSend = audioBufferQueueRef.current;
+                                audioBufferQueueRef.current = [];
+
+                                const totalLength = chunksToSend.reduce((acc, chunk) => acc + chunk.length, 0);
+                                const concatenatedData = new Float32Array(totalLength);
+                                let offset = 0;
+                                for (const chunk of chunksToSend) {
+                                    concatenatedData.set(chunk, offset);
+                                    offset += chunk.length;
+                                }
+                                
+                                const pcmBlob = createBlob(concatenatedData);
+                                if (sessionPromiseRef.current) {
+                                    sessionPromiseRef.current.then((session) => {
+                                        session.sendRealtimeInput({ media: pcmBlob });
+                                    });
+                                }
                             }
                         };
                         

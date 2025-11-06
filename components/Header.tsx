@@ -40,9 +40,14 @@ export const Header: React.FC<HeaderProps> = ({ user, activeBook, onLogout, setA
     <header className="bg-gray-900 bg-opacity-50 backdrop-blur-md sticky top-0 z-50 p-4 flex items-center justify-between border-b border-indigo-500/30">
       <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTool(null)}>
         <i className="fas fa-brain text-3xl text-indigo-400"></i>
-        <h1 className="text-2xl font-bold tracking-tighter text-white">
-          Bookmarketing<span className="text-indigo-400">.AI</span>
-        </h1>
+        <div className="flex items-baseline gap-3">
+          <h1 className="text-2xl font-bold tracking-tighter text-white">
+            Bookmarketing<span className="text-indigo-400">.AI</span>
+          </h1>
+          <span className="text-lg font-medium text-indigo-200 hidden md:block truncate" title={activeBook.title}>
+            / {activeBook.title}
+          </span>
+        </div>
       </div>
        <div className="flex items-center gap-4">
          <button onClick={() => setActiveTool(null)} className="text-indigo-300 hover:text-white transition-colors" title="Dashboard">
@@ -52,8 +57,7 @@ export const Header: React.FC<HeaderProps> = ({ user, activeBook, onLogout, setA
             <button onClick={() => setIsDropdownOpen(!isDropdownOpen)} className="flex items-center gap-3 bg-gray-800/50 hover:bg-gray-700/50 px-3 py-1.5 rounded-lg border border-transparent hover:border-indigo-500 transition-colors">
               <img src={user.avatarUrl} alt={user.name} className="w-8 h-8 rounded-full border-2 border-indigo-400" />
               <div className="text-left hidden sm:block">
-                  <p className="text-sm font-medium text-white leading-tight">{activeBook.title}</p>
-                  <p className="text-xs text-indigo-300 leading-tight">{user.name}</p>
+                  <p className="text-sm font-medium text-white leading-tight">{user.name}</p>
               </div>
               <i className={`fas fa-chevron-down text-xs text-indigo-300 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}></i>
             </button>

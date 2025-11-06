@@ -9,6 +9,7 @@ export const FunnelBuilder: React.FC = () => {
     const [funnelPlan, setFunnelPlan] = useState<any | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [progressMessage, setProgressMessage] = useState('');
 
     const handleFileSelect = useCallback((file: File) => {
         setError(null);
@@ -24,14 +25,16 @@ export const FunnelBuilder: React.FC = () => {
         setIsLoading(true);
         setError(null);
         setFunnelPlan(null);
+        setProgressMessage('Initiating funnel generation...');
         try {
-            const result = await generateSalesFunnel(manuscriptFile);
+            const result = await generateSalesFunnel(manuscriptFile, setProgressMessage);
             setFunnelPlan(result);
         } catch (e) {
             setError('Failed to generate the sales funnel. The file may be invalid or the analysis failed. Please try again.');
             console.error(e);
         } finally {
             setIsLoading(false);
+            setProgressMessage('');
         }
     };
 
@@ -66,7 +69,7 @@ export const FunnelBuilder: React.FC = () => {
             {error && <p className="text-red-400 mt-4 text-center">{error}</p>}
             
             <div className="mt-8">
-                {isLoading && <LoadingSpinner message="Your AI funnel expert is building your plan..." />}
+                {isLoading && <LoadingSpinner message={progressMessage || "Your AI funnel expert is building your plan..."} />}
                 {funnelPlan && <FunnelDisplay plan={funnelPlan} onReset={handleReset} />}
             </div>
         </div>

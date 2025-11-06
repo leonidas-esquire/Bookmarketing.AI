@@ -58,6 +58,7 @@ export const BookDistributor: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [result, setResult] = useState<any | null>(null);
     const [distributionStatus, setDistributionStatus] = useState<Record<string, DistributionStatus>>({});
+    const [progressMessage, setProgressMessage] = useState('');
 
     const [formData, setFormData] = useState({
         manuscriptFile: null as File | null,
@@ -105,8 +106,9 @@ export const BookDistributor: React.FC = () => {
         }
         setIsLoading(true);
         setError(null);
+        setProgressMessage('Initiating distribution kit generation...');
         try {
-            const kit = await generateDistributionKit(formData);
+            const kit = await generateDistributionKit(formData, setProgressMessage);
             setResult(kit);
             const initialStatus: Record<string, DistributionStatus> = {};
             distributors.forEach(d => initialStatus[d.id] = 'pending');
@@ -117,6 +119,7 @@ export const BookDistributor: React.FC = () => {
             console.error(e);
         } finally {
             setIsLoading(false);
+            setProgressMessage('');
         }
     };
 
@@ -181,7 +184,7 @@ export const BookDistributor: React.FC = () => {
     );
 
     if (isLoading) {
-        return <div className="max-w-4xl mx-auto"><LoadingSpinner message="Generating your professional distribution package..." /></div>;
+        return <div className="max-w-4xl mx-auto"><LoadingSpinner message={progressMessage || "Generating your professional distribution package..."} /></div>;
     }
     
     if (step === 'results' && result) {
