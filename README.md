@@ -64,6 +64,75 @@ The project is organized into a clean, modular architecture that separates conce
 
 The **components** directory contains all React components, organized by their functional categories (Foundational Strategy, Creative Tools, Intelligence & Sales, Distribution & Scaling, and UI Components). The **services** directory houses the core business logic, including the Gemini API integration, PDF export functionality, and sales data management.
 
+### Directory Structure
+
+```
+Bookmarketing.AI/
+├── README.md                                    # Comprehensive project overview
+├── package.json                                 # Project dependencies and scripts
+├── tsconfig.json                                # TypeScript configuration
+├── vite.config.ts                               # Vite build configuration
+├── index.html                                   # Application entry point
+├── index.tsx                                    # React application bootstrap
+├── App.tsx                                      # Main application component
+├── types.ts                                     # TypeScript type definitions
+├── metadata.json                                # Project metadata
+├── Bookmarketing_ai.png                         # Project cover image
+├── project-structure.mmd                        # Mermaid diagram source
+├── project-structure.png                        # Project structure visualization
+│
+├── components/                                  # React components
+│   ├── Dashboard.tsx                            # Main dashboard component
+│   ├── Header.tsx                               # Application header
+│   ├── LeftSidebar.tsx                          # Navigation sidebar
+│   ├── LoginScreen.tsx                          # User authentication
+│   │
+│   ├── BookDNAAnalyzer.tsx                      # Book analysis tool
+│   ├── CampaignArchitectureGenerator.tsx        # Campaign planning
+│   ├── MultiChannelStrategyGenerator.tsx        # Multi-channel marketing
+│   ├── AssetGenerator.tsx                       # Marketing asset creation
+│   │
+│   ├── MarketingVideoCreator.tsx                # Video campaign creator
+│   ├── ImageEditor.tsx                          # Cover art editor
+│   ├── AudiobookSampleCreator.tsx               # Audio content generator
+│   ├── VideoGenerator.tsx                       # Video generation tool
+│   │
+│   ├── MarketResearch.tsx                       # Market intelligence
+│   ├── ContentAnalyzer.tsx                      # Content analysis
+│   ├── FunnelBuilder.tsx                        # Sales funnel builder
+│   ├── DirectSalesChannel.tsx                   # Direct sales platform
+│   ├── SalesAnalytics.tsx                       # Sales analytics dashboard
+│   │
+│   ├── WebsiteBuilder.tsx                       # Author website builder
+│   ├── BookDistributor.tsx                      # Book distribution tool
+│   ├── AudioTranscriber.tsx                     # Audio transcription
+│   │
+│   ├── AddBookModal.tsx                         # Book addition modal
+│   ├── ConfirmationModal.tsx                    # Confirmation dialogs
+│   ├── StripeCheckoutModal.tsx                  # Payment checkout
+│   ├── FileUploader.tsx                         # File upload component
+│   ├── LoadingSpinner.tsx                       # Loading indicator
+│   ├── ToolCard.tsx                             # Tool display card
+│   ├── StatCard.tsx                             # Statistics card
+│   ├── SalesChart.tsx                           # Sales chart component
+│   ├── SalesSidebar.tsx                         # Sales sidebar
+│   ├── PublicSalesPage.tsx                      # Public sales page
+│   ├── AnalysisDisplay.tsx                      # Analysis results display
+│   ├── AudienceAnalyzer.tsx                     # Audience analysis
+│   ├── AudienceProfileDisplay.tsx               # Audience profile view
+│   ├── FunnelDisplay.tsx                        # Funnel visualization
+│   ├── VideoPlanDisplay.tsx                     # Video plan display
+│   ├── GeneratorModule.tsx                      # Content generator module
+│   ├── ImageGenerator.tsx                       # Image generation
+│   ├── MarketingChatbot.tsx                     # Marketing chatbot
+│   └── MarketingCopywriter.tsx                  # Copywriting assistant
+│
+└── services/                                    # Business logic services
+    ├── geminiService.ts                         # Google Gemini API integration
+    ├── pdfExportService.ts                      # PDF export functionality
+    └── salesDataService.ts                      # Sales data management
+```
+
 ## Getting Started
 
 Follow these steps to get your local development environment set up and running.
