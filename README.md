@@ -4,6 +4,16 @@
 
 > **Bookmarketing.AI** is your all-in-one solution for turning your manuscript into a bestseller. We provide a suite of AI-powered tools designed to handle the complexities of book marketing, from audience analysis to targeted outreach. Our platform empowers authors to focus on what they do best—writing—while our intelligent software works to connect their stories with one million readers. Your journey to becoming a bestselling author starts here.
 
+## 📖 Documentation
+
+For comprehensive documentation, tutorials, and guides, please visit our **[Wiki](https://github.com/leonidas-esquire/Bookmarketing.AI/wiki)**.
+
+The wiki includes detailed information on:
+- Getting started with installation and setup
+- In-depth feature explanations and usage guides
+- Technology stack and architecture details
+- Project structure and contribution guidelines
+
 ## Key Features
 
 **Bookmarketing.AI** leverages the power of the Google Gemini API to offer a comprehensive suite of AI-driven marketing tools. These features are designed to streamline your marketing efforts and help you connect with a global audience.
