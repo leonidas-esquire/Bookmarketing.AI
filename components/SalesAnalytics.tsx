@@ -71,7 +71,7 @@ export const SalesAnalytics: React.FC<SalesAnalyticsProps> = ({ user, salesData,
         
         const chartData = Object.entries(salesByDate).map(([date, units]) => ({ date, units })).sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime());
         const retailerData = Object.entries(salesByRetailer).sort((a,b) => b[1] - a[1]);
-        const countryData = Object.entries(salesByCountry).sort((a,b) => b[1] - a[1]).slice(0, 5);
+        const countryData = Object.entries(salesByCountry).sort((a,b) => b[1] - a[1]);
         
         return { chartData, retailerData, countryData };
     }, [filteredData]);
@@ -113,9 +113,9 @@ export const SalesAnalytics: React.FC<SalesAnalyticsProps> = ({ user, salesData,
                     </div>
                     
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-                            <h3 className="text-xl font-bold text-white mb-4">Sales by Retailer</h3>
-                            <div className="space-y-3">
+                        <div className="bg-gray-800 p-6 rounded-lg shadow-lg flex flex-col">
+                            <h3 className="text-xl font-bold text-white mb-4 flex-shrink-0">Sales by Retailer</h3>
+                            <div className="space-y-3 overflow-y-auto h-64 pr-2">
                                 {aggregatedData.retailerData.length > 0 ? aggregatedData.retailerData.map(([name, units]) => (
                                     <div key={name}>
                                         <div className="flex justify-between text-sm mb-1">
@@ -129,9 +129,9 @@ export const SalesAnalytics: React.FC<SalesAnalyticsProps> = ({ user, salesData,
                                 )) : <p className="text-gray-500">No sales data for this period.</p>}
                             </div>
                         </div>
-                        <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-                            <h3 className="text-xl font-bold text-white mb-4">Top 5 Countries</h3>
-                            <ul className="space-y-3">
+                        <div className="bg-gray-800 p-6 rounded-lg shadow-lg flex flex-col">
+                            <h3 className="text-xl font-bold text-white mb-4 flex-shrink-0">Sales by Country</h3>
+                            <ul className="space-y-3 overflow-y-auto h-64 pr-2">
                                 {aggregatedData.countryData.length > 0 ? aggregatedData.countryData.map(([name, units]) => (
                                     <li key={name} className="flex justify-between items-center bg-gray-700 p-2 rounded-md">
                                         <span className="font-semibold text-indigo-200">{name}</span>
