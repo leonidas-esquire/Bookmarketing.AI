@@ -1,0 +1,60 @@
+graph TB
+    Root[Bookmarketing.AI]
+    
+    Root --> Components[📁 components/]
+    Root --> Services[📁 services/]
+    Root --> Config[⚙️ Configuration Files]
+    Root --> Entry[🚀 Entry Points]
+    
+    Components --> Strategy[🎯 Foundational Strategy]
+    Components --> Creative[🎨 Creative Tools]
+    Components --> Intelligence[📊 Intelligence & Sales]
+    Components --> Distribution[🌐 Distribution & Scaling]
+    Components --> UI[🖼️ UI Components]
+    
+    Strategy --> BookDNA[BookDNAAnalyzer.tsx]
+    Strategy --> Campaign[CampaignArchitectureGenerator.tsx]
+    Strategy --> MultiChannel[MultiChannelStrategyGenerator.tsx]
+    Strategy --> Asset[AssetGenerator.tsx]
+    
+    Creative --> VideoCreator[MarketingVideoCreator.tsx]
+    Creative --> ImageEditor[ImageEditor.tsx]
+    Creative --> AudioCreator[AudiobookSampleCreator.tsx]
+    Creative --> VideoGen[VideoGenerator.tsx]
+    
+    Intelligence --> Market[MarketResearch.tsx]
+    Intelligence --> Content[ContentAnalyzer.tsx]
+    Intelligence --> Funnel[FunnelBuilder.tsx]
+    Intelligence --> Sales[DirectSalesChannel.tsx]
+    Intelligence --> Analytics[SalesAnalytics.tsx]
+    
+    Distribution --> Website[WebsiteBuilder.tsx]
+    Distribution --> Distributor[BookDistributor.tsx]
+    Distribution --> Transcriber[AudioTranscriber.tsx]
+    
+    UI --> Dashboard[Dashboard.tsx]
+    UI --> Header[Header.tsx]
+    UI --> Sidebar[LeftSidebar.tsx]
+    UI --> Modal[AddBookModal.tsx]
+    UI --> Other[+ 10 more components]
+    
+    Services --> Gemini[geminiService.ts]
+    Services --> PDF[pdfExportService.ts]
+    Services --> SalesData[salesDataService.ts]
+    
+    Config --> Package[package.json]
+    Config --> TS[tsconfig.json]
+    Config --> Vite[vite.config.ts]
+    Config --> Types[types.ts]
+    
+    Entry --> AppTSX[App.tsx]
+    Entry --> IndexTSX[index.tsx]
+    Entry --> HTML[index.html]
+    
+    style Root fill:#6366f1,stroke:#4f46e5,stroke-width:3px,color:#fff
+    style Components fill:#8b5cf6,stroke:#7c3aed,stroke-width:2px,color:#fff
+    style Services fill:#8b5cf6,stroke:#7c3aed,stroke-width:2px,color:#fff
+    style Strategy fill:#10b981,stroke:#059669,stroke-width:2px,color:#fff
+    style Creative fill:#f59e0b,stroke:#d97706,stroke-width:2px,color:#fff
+    style Intelligence fill:#3b82f6,stroke:#2563eb,stroke-width:2px,color:#fff
+    style Distribution fill:#ec4899,stroke:#db2777,stroke-width:2px,color:#fff

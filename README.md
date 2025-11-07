@@ -44,6 +44,16 @@ This project is built with a modern, scalable technology stack:
 -   **[Google Gemini API](https://ai.google.dev/)** — Powers AI-driven marketing features
 -   **[jsPDF](https://github.com/parallax/jsPDF)** — Client-side PDF generation for marketing materials
 
+## Project Structure
+
+The project is organized into a clean, modular architecture that separates concerns and makes it easy to navigate:
+
+<div align="center">
+<img src="./project-structure.png" alt="Project Structure Diagram" />
+</div>
+
+The **components** directory contains all React components, organized by their functional categories (Foundational Strategy, Creative Tools, Intelligence & Sales, Distribution & Scaling, and UI Components). The **services** directory houses the core business logic, including the Gemini API integration, PDF export functionality, and sales data management.
+
 ## Getting Started
 
 Follow these steps to get your local development environment set up and running.
