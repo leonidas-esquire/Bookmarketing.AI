@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { GoogleGenAI, LiveSession, LiveServerMessage, Modality, Blob } from '@google/genai';
 
@@ -34,12 +33,6 @@ export const AudioTranscriber: React.FC = () => {
     const scriptProcessorRef = useRef<ScriptProcessorNode | null>(null);
     const mediaStreamSourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
     
-    // Refs for batching audio chunks to prevent hitting API rate limits
-    const audioBufferQueueRef = useRef<Float32Array[]>([]);
-    // The script processor sends chunks of 4096 samples at 16000Hz, which is ~4 times per second.
-    // Batching 8 chunks sends a request roughly every 2 seconds, reducing RPM from ~240 to a safe ~30.
-    const CHUNK_BATCH_SIZE = 8;
-    
     const stopRecording = useCallback(() => {
         if (streamRef.current) {
             streamRef.current.getTracks().forEach(track => track.stop());
@@ -54,25 +47,28 @@ export const AudioTranscriber: React.FC = () => {
             mediaStreamSourceRef.current = null;
         }
         if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
-            audioContextRef.current.close();
+            audioContextRef.current.close().catch(console.error);
+            audioContextRef.current = null;
         }
 
         if (sessionPromiseRef.current) {
             sessionPromiseRef.current.then(session => session.close());
             sessionPromiseRef.current = null;
         }
-        audioBufferQueueRef.current = []; // Clear any pending audio chunks
+        
         setIsRecording(false);
     }, []);
 
     const startRecording = async () => {
-        try {
-            setError(null);
-            if (isRecording) {
-                 stopRecording();
-                 return;
-            }
+        setError(null);
+        if (isRecording) {
+             stopRecording();
+             return;
+        }
+        
+        setTranscription('');
 
+        try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             streamRef.current = stream;
 
@@ -91,26 +87,12 @@ export const AudioTranscriber: React.FC = () => {
 
                         scriptProcessorRef.current.onaudioprocess = (audioProcessingEvent) => {
                             const inputData = audioProcessingEvent.inputBuffer.getChannelData(0);
-                            audioBufferQueueRef.current.push(new Float32Array(inputData));
-
-                            if (audioBufferQueueRef.current.length >= CHUNK_BATCH_SIZE) {
-                                const chunksToSend = audioBufferQueueRef.current;
-                                audioBufferQueueRef.current = [];
-
-                                const totalLength = chunksToSend.reduce((acc, chunk) => acc + chunk.length, 0);
-                                const concatenatedData = new Float32Array(totalLength);
-                                let offset = 0;
-                                for (const chunk of chunksToSend) {
-                                    concatenatedData.set(chunk, offset);
-                                    offset += chunk.length;
-                                }
-                                
-                                const pcmBlob = createBlob(concatenatedData);
-                                if (sessionPromiseRef.current) {
-                                    sessionPromiseRef.current.then((session) => {
-                                        session.sendRealtimeInput({ media: pcmBlob });
-                                    });
-                                }
+                            const pcmBlob = createBlob(inputData);
+                            
+                            if (sessionPromiseRef.current) {
+                                sessionPromiseRef.current.then((session) => {
+                                    session.sendRealtimeInput({ media: pcmBlob });
+                                });
                             }
                         };
                         
@@ -118,11 +100,12 @@ export const AudioTranscriber: React.FC = () => {
                         scriptProcessorRef.current.connect(audioContextRef.current!.destination);
                     },
                     onmessage: (message: LiveServerMessage) => {
-                        if (message.serverContent?.inputTranscription) {
-                            setTranscription(prev => prev + message.serverContent.inputTranscription.text);
+                         if (message.serverContent?.inputTranscription?.text) {
+                            const text = message.serverContent.inputTranscription.text;
+                            setTranscription(prev => prev + text);
                         }
-                         if (message.serverContent?.turnComplete) {
-                            setTranscription(prev => prev + ' ');
+                        if (message.serverContent?.turnComplete) {
+                            setTranscription(prev => prev.trim() + ' ');
                         }
                     },
                     onerror: (e: ErrorEvent) => {
@@ -132,10 +115,12 @@ export const AudioTranscriber: React.FC = () => {
                     },
                     onclose: (e: CloseEvent) => {
                         console.log('Connection closed.');
-                        stopRecording();
+                        // Ensure recording state is false if closed unexpectedly
+                        setIsRecording(false);
                     },
                 },
                 config: {
+                    responseModalities: [Modality.AUDIO],
                     inputAudioTranscription: {},
                 },
             });
@@ -147,7 +132,6 @@ export const AudioTranscriber: React.FC = () => {
         }
     };
     
-    // Cleanup on component unmount
     useEffect(() => {
         return () => {
             stopRecording();
@@ -166,6 +150,7 @@ export const AudioTranscriber: React.FC = () => {
                     onClick={startRecording}
                     className={`w-24 h-24 rounded-full flex items-center justify-center transition-all duration-300
                     ${isRecording ? 'bg-red-600 hover:bg-red-700' : 'bg-indigo-600 hover:bg-indigo-700'}`}
+                    aria-label={isRecording ? 'Stop recording' : 'Start recording'}
                 >
                     <i className={`fas fa-microphone-alt text-4xl text-white ${isRecording ? 'animate-pulse' : ''}`}></i>
                 </button>

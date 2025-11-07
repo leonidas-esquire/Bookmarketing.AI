@@ -24,7 +24,8 @@ const handleApiError = (error: any, context: string): Error => {
             error.message.startsWith("The request was blocked") ||
             error.message.startsWith("Received an empty text response") ||
             error.message.startsWith("Could not find a valid JSON object") ||
-            error.message.startsWith("Failed to parse")
+            error.message.startsWith("Failed to parse") ||
+            error.message.startsWith("The Marketing Mentor chatbot") // Pass through chat init error
         ) {
             // Pass through our custom, user-friendly errors from handleJsonResponse
             return error;
@@ -149,16 +150,18 @@ const handleJsonResponse = (response: GenerateContentResponse) => {
 
 
 export const generateImage = async (prompt: string, aspectRatio: string): Promise<string> => {
-  const ai = getGenAI();
-  const response: GenerateImagesResponse = await apiCallWrapper(() => ai.models.generateImages({
-    model: 'imagen-4.0-generate-001',
-    prompt,
-    config: {
-      numberOfImages: 1,
-      outputMimeType: 'image/jpeg',
-      aspectRatio: aspectRatio as "1:1" | "16:9" | "9:16" | "4:3" | "3:4",
-    },
-  }), 'Image Generation');
+  const response: GenerateImagesResponse = await apiCallWrapper(() => {
+    const ai = getGenAI();
+    return ai.models.generateImages({
+        model: 'imagen-4.0-generate-001',
+        prompt,
+        config: {
+        numberOfImages: 1,
+        outputMimeType: 'image/jpeg',
+        aspectRatio: aspectRatio as "1:1" | "16:9" | "9:16" | "4:3" | "3:4",
+        },
+    });
+  }, 'Image Generation');
 
   if (response.generatedImages.length > 0) {
     const base64ImageBytes = response.generatedImages[0].image.imageBytes;
@@ -168,17 +171,19 @@ export const generateImage = async (prompt: string, aspectRatio: string): Promis
 };
 
 export const editImage = async (prompt: string, imageBase64: string, mimeType: string): Promise<string> => {
-    const ai = getGenAI();
-    const response: GenerateContentResponse = await apiCallWrapper(() => ai.models.generateContent({
-        model: 'gemini-2.5-flash-image',
-        contents: {
-            parts: [
-                { inlineData: { data: imageBase64, mimeType } },
-                { text: prompt },
-            ],
-        },
-        config: { responseModalities: [Modality.IMAGE] },
-    }), 'Image Editing');
+    const response: GenerateContentResponse = await apiCallWrapper(() => {
+        const ai = getGenAI();
+        return ai.models.generateContent({
+            model: 'gemini-2.5-flash-image',
+            contents: {
+                parts: [
+                    { inlineData: { data: imageBase64, mimeType } },
+                    { text: prompt },
+                ],
+            },
+            config: { responseModalities: [Modality.IMAGE] },
+        });
+    }, 'Image Editing');
 
     for (const part of response.candidates[0].content.parts) {
         if (part.inlineData) {
@@ -189,17 +194,19 @@ export const editImage = async (prompt: string, imageBase64: string, mimeType: s
 };
 
 export const removeImageBackground = async (imageBase64: string, mimeType: string): Promise<string> => {
-    const ai = getGenAI();
-    const response: GenerateContentResponse = await apiCallWrapper(() => ai.models.generateContent({
-        model: 'gemini-2.5-flash-image',
-        contents: {
-            parts: [
-                { inlineData: { data: imageBase64, mimeType } },
-                { text: "Please remove the background from this image, leaving only the main subject. The new background should be a clean, solid white." },
-            ],
-        },
-        config: { responseModalities: [Modality.IMAGE] },
-    }), 'Background Removal');
+    const response: GenerateContentResponse = await apiCallWrapper(() => {
+        const ai = getGenAI();
+        return ai.models.generateContent({
+            model: 'gemini-2.5-flash-image',
+            contents: {
+                parts: [
+                    { inlineData: { data: imageBase64, mimeType } },
+                    { text: "Please remove the background from this image, leaving only the main subject. The new background should be a clean, solid white." },
+                ],
+            },
+            config: { responseModalities: [Modality.IMAGE] },
+        });
+    }, 'Background Removal');
 
     for (const part of response.candidates[0].content.parts) {
         if (part.inlineData) {
@@ -211,16 +218,21 @@ export const removeImageBackground = async (imageBase64: string, mimeType: strin
 
 
 export const generateVideoFromText = async (prompt: string, aspectRatio: "16:9" | "9:16", resolution: '720p' | '1080p') => {
-    const ai = getGenAI();
-    let operation: Operation = await apiCallWrapper(() => ai.models.generateVideos({
-      model: 'veo-3.1-fast-generate-preview',
-      prompt: prompt,
-      config: { numberOfVideos: 1, resolution: resolution, aspectRatio: aspectRatio }
-    }), 'Text-to-Video Generation (Initiate)');
+    let operation: Operation = await apiCallWrapper(() => {
+        const ai = getGenAI();
+        return ai.models.generateVideos({
+            model: 'veo-3.1-fast-generate-preview',
+            prompt: prompt,
+            config: { numberOfVideos: 1, resolution: resolution, aspectRatio: aspectRatio }
+        });
+    }, 'Text-to-Video Generation (Initiate)');
     
     while (!operation.done) {
       await new Promise(resolve => setTimeout(resolve, 10000));
-      operation = await apiCallWrapper(() => ai.operations.getVideosOperation({operation: operation}), 'Text-to-Video Generation (Polling)');
+      operation = await apiCallWrapper(() => {
+          const ai = getGenAI();
+          return ai.operations.getVideosOperation({operation: operation});
+      }, 'Text-to-Video Generation (Polling)');
     }
 
     const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
@@ -232,17 +244,22 @@ export const generateVideoFromText = async (prompt: string, aspectRatio: "16:9" 
 };
 
 export const generateVideoFromImage = async (prompt: string, imageBase64: string, mimeType: string, aspectRatio: "16:9" | "9:16", resolution: '720p' | '1080p') => {
-    const ai = getGenAI();
-    let operation: Operation = await apiCallWrapper(() => ai.models.generateVideos({
-      model: 'veo-3.1-fast-generate-preview',
-      prompt: prompt,
-      image: { imageBytes: imageBase64, mimeType: mimeType },
-      config: { numberOfVideos: 1, resolution: resolution, aspectRatio: aspectRatio }
-    }), 'Image-to-Video Generation (Initiate)');
+    let operation: Operation = await apiCallWrapper(() => {
+        const ai = getGenAI();
+        return ai.models.generateVideos({
+            model: 'veo-3.1-fast-generate-preview',
+            prompt: prompt,
+            image: { imageBytes: imageBase64, mimeType: mimeType },
+            config: { numberOfVideos: 1, resolution: resolution, aspectRatio: aspectRatio }
+        });
+    }, 'Image-to-Video Generation (Initiate)');
 
     while (!operation.done) {
       await new Promise(resolve => setTimeout(resolve, 10000));
-      operation = await apiCallWrapper(() => ai.operations.getVideosOperation({operation: operation}), 'Image-to-Video Generation (Polling)');
+      operation = await apiCallWrapper(() => {
+          const ai = getGenAI();
+          return ai.operations.getVideosOperation({operation: operation});
+      }, 'Image-to-Video Generation (Polling)');
     }
 
     const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
@@ -254,32 +271,38 @@ export const generateVideoFromImage = async (prompt: string, imageBase64: string
 };
 
 export const analyzeImage = async (imageBase64: string, mimeType: string, prompt: string): Promise<string> => {
-  const ai = getGenAI();
   const imagePart = { inlineData: { mimeType: mimeType, data: imageBase64 } };
   const textPart = { text: prompt };
-  const response: GenerateContentResponse = await apiCallWrapper(() => ai.models.generateContent({
-    model: 'gemini-2.5-flash',
-    contents: { parts: [imagePart, textPart] },
-  }), 'Image Analysis');
+  const response: GenerateContentResponse = await apiCallWrapper(() => {
+      const ai = getGenAI();
+      return ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: { parts: [imagePart, textPart] },
+      });
+  }, 'Image Analysis');
   return response.text;
 };
 
 export const generateContent = async (prompt: string, model: 'gemini-2.5-pro' | 'gemini-2.5-flash' | 'gemini-flash-lite-latest'): Promise<string> => {
-    const ai = getGenAI();
-    const response: GenerateContentResponse = await apiCallWrapper(() => ai.models.generateContent({ model, contents: prompt }), 'Generic Content Generation');
+    const response: GenerateContentResponse = await apiCallWrapper(() => {
+        const ai = getGenAI();
+        return ai.models.generateContent({ model, contents: prompt });
+    }, 'Generic Content Generation');
     return response.text;
 };
 
 export const researchWithGoogle = async (query: string): Promise<{ text: string, sources: any[] }> => {
-    const ai = getGenAI();
     const fullQuery = `Please format your response using clear Markdown. Use double newlines to separate paragraphs, headings, and list items for maximum readability. Here is my research query:\n\n"${query}"`;
-    const response: GenerateContentResponse = await apiCallWrapper(() => ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: fullQuery,
-        config: {
-            tools: [{ googleSearch: {} }],
-        },
-    }), 'Google Search Research');
+    const response: GenerateContentResponse = await apiCallWrapper(() => {
+        const ai = getGenAI();
+        return ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: fullQuery,
+            config: {
+                tools: [{ googleSearch: {} }],
+            },
+        });
+    }, 'Google Search Research');
 
     const text = response.text;
     const sources = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
@@ -291,13 +314,19 @@ let chatInstance: Chat | null = null;
 
 export const getChatInstance = (): Chat => {
     if (!chatInstance) {
-        const ai = getGenAI();
-        chatInstance = ai.chats.create({
-            model: 'gemini-2.5-flash',
-            config: {
-                systemInstruction: `You are "Athena", an expert AI Marketing Mentor for authors. Your goal is to provide concise, actionable, and encouraging advice to help authors market their books effectively. Keep your tone professional yet friendly. When asked for ideas, provide them in a clear, easy-to-scan format like bullet points.`,
-            },
-        });
+        try {
+            const ai = getGenAI();
+            chatInstance = ai.chats.create({
+                model: 'gemini-2.5-flash',
+                config: {
+                    systemInstruction: `You are "Athena", an expert AI Marketing Mentor for authors. Your goal is to provide concise, actionable, and encouraging advice to help authors market their books effectively. Keep your tone professional yet friendly. When asked for ideas, provide them in a clear, easy-to-scan format like bullet points.`,
+                },
+            });
+        } catch (error) {
+            console.error("Fatal: Failed to initialize chat instance.", error);
+            // This will be caught by the calling component's try/catch block.
+            throw new Error("The Marketing Mentor chatbot could not be initialized. This might be due to an invalid API key or a network issue.");
+        }
     }
     return chatInstance;
 };
@@ -331,20 +360,65 @@ async function decodeAudioData(
     return buffer;
 }
 
-export const generateSpeech = async (text: string, voiceName: string): Promise<AudioBuffer> => {
-    const ai = getGenAI();
-    const response: GenerateContentResponse = await apiCallWrapper(() => ai.models.generateContent({
-        model: "gemini-2.5-flash-preview-tts",
-        contents: [{ parts: [{ text }] }],
-        config: {
-            responseModalities: [Modality.AUDIO],
-            speechConfig: {
-                voiceConfig: {
-                    prebuiltVoiceConfig: { voiceName },
+// Helper for writing strings to a DataView
+const writeString = (view: DataView, offset: number, str: string) => {
+    for (let i = 0; i < str.length; i++) {
+        view.setUint8(offset + i, str.charCodeAt(i));
+    }
+};
+
+// Creates a WAV file blob from raw PCM audio data.
+const createWavBlob = (pcmData: Uint8Array, numChannels: number, sampleRate: number): Blob => {
+    const bitsPerSample = 16;
+    const byteRate = sampleRate * numChannels * (bitsPerSample / 8);
+    const blockAlign = numChannels * (bitsPerSample / 8);
+    const dataSize = pcmData.length;
+    const chunkSize = 36 + dataSize;
+    const buffer = new ArrayBuffer(44 + dataSize);
+    const view = new DataView(buffer);
+
+    // RIFF header
+    writeString(view, 0, 'RIFF');
+    view.setUint32(4, chunkSize, true);
+    writeString(view, 8, 'WAVE');
+    
+    // fmt chunk
+    writeString(view, 12, 'fmt ');
+    view.setUint32(16, 16, true); // Subchunk1Size for PCM
+    view.setUint16(20, 1, true); // AudioFormat (1 for PCM)
+    view.setUint16(22, numChannels, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, byteRate, true);
+    view.setUint16(32, blockAlign, true);
+    view.setUint16(34, bitsPerSample, true);
+    
+    // data chunk
+    writeString(view, 36, 'data');
+    view.setUint32(40, dataSize, true);
+
+    // Write PCM data
+    new Uint8Array(buffer, 44).set(pcmData);
+
+    return new Blob([view], { type: 'audio/wav' });
+};
+
+
+export const generateSpeech = async (text: string, voiceName: string): Promise<{ buffer: AudioBuffer, blob: Blob }> => {
+    const response: GenerateContentResponse = await apiCallWrapper(() => {
+        const ai = getGenAI();
+        return ai.models.generateContent({
+            model: "gemini-2.5-flash-preview-tts",
+            contents: [{ parts: [{ text }] }],
+            config: {
+                responseModalities: [Modality.AUDIO],
+                speechConfig: {
+                    voiceConfig: {
+                        prebuiltVoiceConfig: { voiceName },
+                    },
                 },
             },
-        },
-    }), 'Speech Generation');
+        });
+    }, 'Speech Generation');
 
     const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
     if (!base64Audio) {
@@ -353,12 +427,14 @@ export const generateSpeech = async (text: string, voiceName: string): Promise<A
 
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
     const decodedBytes = decode(base64Audio);
-    return await decodeAudioData(decodedBytes, audioContext, 24000, 1);
+    const buffer = await decodeAudioData(decodedBytes, audioContext, 24000, 1);
+    const blob = createWavBlob(decodedBytes, 1, 24000);
+
+    return { buffer, blob };
 };
 
 
 export const analyzeManuscript = async (manuscriptFile: File): Promise<string> => {
-    const ai = getGenAI();
     const manuscriptPart = await fileToGenerativePart(manuscriptFile);
     const prompt = `
     ROLE: You are "Athena", a world-class literary analyst and marketing strategist.
@@ -417,13 +493,16 @@ export const analyzeManuscript = async (manuscriptFile: File): Promise<string> =
     This document should be detailed enough to fuel an entire marketing campaign without needing to reference the manuscript again.
     `;
     
-    const response: GenerateContentResponse = await apiCallWrapper(() => ai.models.generateContent({
-        model: 'gemini-2.5-pro',
-        contents: { parts: [{text: prompt}, manuscriptPart] },
-        config: {
-            thinkingConfig: { thinkingBudget: 8192 } // Use a large budget for this deep analysis
-        }
-    }), 'Manuscript Analysis');
+    const response: GenerateContentResponse = await apiCallWrapper(() => {
+        const ai = getGenAI();
+        return ai.models.generateContent({
+            model: 'gemini-2.5-pro',
+            contents: { parts: [{text: prompt}, manuscriptPart] },
+            config: {
+                thinkingConfig: { thinkingBudget: 8192 } // Use a large budget for this deep analysis
+            }
+        });
+    }, 'Manuscript Analysis');
     
     return response.text;
 };
@@ -694,7 +773,6 @@ const ASSETS_SCHEMA = {
 };
 
 const generateCampaignPart = async (analysisText: string, prompt: string, schema: any, context: string): Promise<any> => {
-    const ai = getGenAI();
     const modelConfig = {
         model: 'gemini-2.5-pro',
         contents: { parts: [{ text: prompt }, { text: analysisText }] },
@@ -705,7 +783,10 @@ const generateCampaignPart = async (analysisText: string, prompt: string, schema
             thinkingConfig: { thinkingBudget: 8192 }
         },
     };
-    const response: GenerateContentResponse = await apiCallWrapper(() => ai.models.generateContent(modelConfig), context);
+    const response: GenerateContentResponse = await apiCallWrapper(() => {
+        const ai = getGenAI();
+        return ai.models.generateContent(modelConfig);
+    }, context);
     return handleJsonResponse(response);
 };
 
@@ -797,7 +878,6 @@ const FULL_WEBSITE_SCHEMA = {
 };
 
 export const generateWebsitePlan = async (pdfFile: File, onProgress?: (message: string) => void): Promise<any> => {
-    const ai = getGenAI();
     const pdfPart = await fileToGenerativePart(pdfFile);
     onProgress?.("Designing visual identity, writing copy, and brainstorming ideas... this may take a moment.");
 
@@ -818,7 +898,10 @@ export const generateWebsitePlan = async (pdfFile: File, onProgress?: (message: 
         },
     };
     
-    const response: GenerateContentResponse = await apiCallWrapper(() => ai.models.generateContent(modelConfig), 'Website Plan Generation');
+    const response: GenerateContentResponse = await apiCallWrapper(() => {
+        const ai = getGenAI();
+        return ai.models.generateContent(modelConfig);
+    }, 'Website Plan Generation');
     
     onProgress?.("Finalizing website plan...");
     return handleJsonResponse(response);
@@ -926,7 +1009,6 @@ const FULL_FUNNEL_SCHEMA = {
 };
 
 export const generateSalesFunnel = async (manuscriptFile: File, onProgress?: (message: string) => void): Promise<any> => {
-    const ai = getGenAI();
     onProgress?.("Architecting your complete sales funnel... This may take a moment.");
     const manuscriptPart = await fileToGenerativePart(manuscriptFile);
 
@@ -941,14 +1023,16 @@ export const generateSalesFunnel = async (manuscriptFile: File, onProgress?: (me
         },
     };
 
-    const response: GenerateContentResponse = await apiCallWrapper(() => ai.models.generateContent(modelConfig), 'Sales Funnel Generation');
+    const response: GenerateContentResponse = await apiCallWrapper(() => {
+        const ai = getGenAI();
+        return ai.models.generateContent(modelConfig);
+    }, 'Sales Funnel Generation');
     
     onProgress?.("Funnel generation complete!");
     return handleJsonResponse(response);
 };
 
 export const generateDistributionKit = async (formData: any, onProgress: (message: string) => void): Promise<any> => {
-    const ai = getGenAI();
     onProgress("Analyzing metadata and generating ONIX structure...");
     
     const { manuscriptFile, coverFile, ...metadata } = formData;
@@ -1087,15 +1171,18 @@ export const generateDistributionKit = async (formData: any, onProgress: (messag
         }
     };
 
-    const response: GenerateContentResponse = await apiCallWrapper(() => ai.models.generateContent({
-        model: 'gemini-2.5-pro',
-        contents: { parts: [{ text: prompt }, manuscriptPart, coverPart] },
-        config: {
-            responseMimeType: "application/json",
-            responseSchema: onixSchema,
-            thinkingConfig: { thinkingBudget: 4096 }
-        },
-    }), 'Distribution Kit Generation');
+    const response: GenerateContentResponse = await apiCallWrapper(() => {
+        const ai = getGenAI();
+        return ai.models.generateContent({
+            model: 'gemini-2.5-pro',
+            contents: { parts: [{ text: prompt }, manuscriptPart, coverPart] },
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: onixSchema,
+                thinkingConfig: { thinkingBudget: 4096 }
+            },
+        });
+    }, 'Distribution Kit Generation');
     
     onProgress("Finalizing distribution package...");
     return handleJsonResponse(response);
@@ -1163,7 +1250,6 @@ const FULL_VIDEO_PLAN_SCHEMA = {
 };
 
 export const generateCompleteVideoMarketingPlan = async (formData: any, onProgress?: (message: string) => void): Promise<any> => {
-    const ai = getGenAI();
     const { manuscriptFile, metadata, authorGoal, platformTargets, tonePreference } = formData;
 
     onProgress?.("Analyzing manuscript and creating your complete video marketing blueprint...");
@@ -1204,7 +1290,10 @@ export const generateCompleteVideoMarketingPlan = async (formData: any, onProgre
         },
     };
     
-    const response: GenerateContentResponse = await apiCallWrapper(() => ai.models.generateContent(modelConfig), 'Complete Video Marketing Plan Generation');
+    const response: GenerateContentResponse = await apiCallWrapper(() => {
+        const ai = getGenAI();
+        return ai.models.generateContent(modelConfig);
+    }, 'Complete Video Marketing Plan Generation');
     
     onProgress?.("Video marketing plan finalized!");
     return handleJsonResponse(response);
