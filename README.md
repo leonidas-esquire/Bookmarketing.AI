@@ -4,6 +4,16 @@
 
 > **Bookmarketing.AI** is your all-in-one solution for turning your manuscript into a bestseller. We provide a suite of AI-powered tools designed to handle the complexities of book marketing, from audience analysis to targeted outreach. Our platform empowers authors to focus on what they do best—writing—while our intelligent software works to connect their stories with one million readers. Your journey to becoming a bestselling author starts here.
 
+## Technology Stack
+
+This project is built with a modern, scalable technology stack:
+
+-   **[React](https://react.dev/)** — A JavaScript library for building user interfaces
+-   **[Vite](https://vitejs.dev/)** — Next-generation frontend tooling for faster development
+-   **[TypeScript](https://www.typescriptlang.org/)** — Typed superset of JavaScript for enhanced code quality
+-   **[Google Gemini API](https://ai.google.dev/)** — Powers AI-driven marketing features
+-   **[jsPDF](https://github.com/parallax/jsPDF)** — Client-side PDF generation for marketing materials
+
 ## Getting Started
 
 Follow these steps to get your local development environment set up and running.
