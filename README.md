@@ -4,19 +4,47 @@
 
 > **Bookmarketing.AI** is your all-in-one solution for turning your manuscript into a bestseller. We provide a suite of AI-powered tools designed to handle the complexities of book marketing, from audience analysis to targeted outreach. Our platform empowers authors to focus on what they do best—writing—while our intelligent software works to connect their stories with one million readers. Your journey to becoming a bestselling author starts here.
 
-# Run and deploy your AI Studio app
+## Getting Started
 
-This contains everything you need to run your app locally.
+Follow these steps to get your local development environment set up and running.
 
-View your app in AI Studio: https://ai.studio/apps/drive/1k6Wu0x9lfGdc8XlVPlHhiSW4FO9--DA0
+### Prerequisites
 
-## Run Locally
+Make sure you have [Node.js](https://nodejs.org/) installed on your system.
 
-**Prerequisites:**  Node.js
+### Installation & Setup
 
+1.  **Clone the repository:**
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+    ```bash
+    git clone https://github.com/leonidas-esquire/Bookmarketing.AI.git
+    cd Bookmarketing.AI
+    ```
+
+2.  **Install dependencies:**
+
+    Use npm to install the necessary packages.
+
+    ```bash
+    npm install
+    ```
+
+3.  **Set up your environment variables:**
+
+    Create a `.env.local` file in the root of your project and add your Gemini API key.
+
+    ```
+    GEMINI_API_KEY=your_api_key_here
+    ```
+
+4.  **Run the development server:**
+
+    ```bash
+    npm run dev
+    ```
+
+    Your application should now be running at `http://localhost:3000`.
+
+---
+
+**View your app in AI Studio:** https://ai.studio/apps/drive/1k6Wu0x9lfGdc8XlVPlHhiSW4FO9--DA0
