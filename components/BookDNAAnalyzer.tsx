@@ -4,7 +4,7 @@ import { analyzeManuscript } from '../services/geminiService';
 import { FileUploader } from './FileUploader';
 import { LoadingSpinner } from './LoadingSpinner';
 import { exportAnalysisToPDF } from '../services/pdfExportService';
-import ReactMarkdown from 'react-markdown';
+import { AnalysisDisplay } from './AnalysisDisplay';
 
 interface BookDNAAnalyzerProps {
     onAnalysisComplete: (analysisText: string) => void;
@@ -92,12 +92,8 @@ export const BookDNAAnalyzer: React.FC<BookDNAAnalyzerProps> = ({ onAnalysisComp
                         This "Book DNA" is now saved and will be used by the other strategy generators.
                     </p>
                 </div>
-
-                <div 
-                    className="bg-gray-800 p-6 rounded-lg prose prose-invert max-w-none prose-p:text-indigo-100 prose-headings:text-white max-h-[60vh] overflow-y-auto border border-gray-700"
-                >
-                    <ReactMarkdown>{analysisText}</ReactMarkdown>
-                </div>
+                
+                <AnalysisDisplay analysisText={analysisText} />
                 
                 <div className="mt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
                      <button 
@@ -114,6 +110,7 @@ export const BookDNAAnalyzer: React.FC<BookDNAAnalyzerProps> = ({ onAnalysisComp
                         {isExporting ? <><i className="fas fa-spinner fa-spin mr-2"></i>Exporting...</> : <><i className="fas fa-file-pdf mr-2"></i>Export to PDF</>}
                     </button>
                 </div>
+                 {error && <p className="text-red-400 mt-4 text-center">{error}</p>}
             </div>
         );
     }

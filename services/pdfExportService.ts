@@ -1,4 +1,3 @@
-
 import jsPDF from 'jspdf';
 
 // Constants for PDF layout and styling
@@ -18,14 +17,14 @@ class PdfBuilder {
     doc: jsPDF;
     cursorY: number;
     plan: any;
-    bookTitle: string;
+    documentTitle: string;
     sectionTitle: string;
 
-    constructor(plan: any, bookTitle: string, sectionTitle: string) {
+    constructor(plan: any, documentTitle: string, sectionTitle: string) {
         this.doc = new jsPDF('p', 'mm', 'a4');
         this.cursorY = MARGIN;
         this.plan = plan;
-        this.bookTitle = bookTitle || "Untitled Book";
+        this.documentTitle = documentTitle || "Untitled";
         this.sectionTitle = sectionTitle;
     }
     
@@ -43,7 +42,7 @@ class PdfBuilder {
         this.doc.setFontSize(FONT_SIZES.small);
         this.doc.setTextColor(LIGHT_TEXT_COLOR);
         this.doc.text('Bookmarketing.AI Plan', MARGIN, 10);
-        this.doc.text(this.bookTitle, PAGE_WIDTH - MARGIN, 10, { align: 'right' });
+        this.doc.text(this.documentTitle, PAGE_WIDTH - MARGIN, 10, { align: 'right' });
         this.doc.setDrawColor(LIGHT_TEXT_COLOR);
         this.doc.line(MARGIN, 12, PAGE_WIDTH - MARGIN, 12);
     }
@@ -144,7 +143,7 @@ class PdfBuilder {
         this.doc.setFont('helvetica', 'bold');
         this.doc.setFontSize(FONT_SIZES.title);
         this.doc.setTextColor('#FFFFFF');
-        const titleLines = this.doc.splitTextToSize(this.bookTitle, MAX_WIDTH - 20);
+        const titleLines = this.doc.splitTextToSize(this.documentTitle, MAX_WIDTH - 20);
         this.doc.text(titleLines, PAGE_WIDTH / 2, 100, { align: 'center' });
         
         this.doc.setFont('helvetica', 'normal');
@@ -266,6 +265,39 @@ class PdfBuilder {
             this.addBody(script.script);
         });
     }
+    
+    addResearch(result: { text: string; sources: any[] }) {
+        this.doc.addPage();
+        this.addHeader();
+        this.cursorY = CONTENT_START_Y;
+        
+        this.addH2('Research Findings');
+        this.addMarkdown(result.text);
+        
+        if (result.sources && result.sources.length > 0) {
+            this.cursorY += 5;
+            this.addH2('Sources');
+            result.sources.forEach(source => {
+                if(source.web && source.web.title && source.web.uri) {
+                    this.addBody(`- ${source.web.title}`);
+                    
+                    this.doc.setFont('helvetica', 'normal');
+                    this.doc.setFontSize(FONT_SIZES.small);
+                    this.doc.setTextColor(PRIMARY_COLOR);
+                    
+                    const uri = source.web.uri;
+                    const lines = this.doc.splitTextToSize(uri, MAX_WIDTH - 10);
+                    const heightNeeded = lines.length * FONT_SIZES.small * 0.35 * LINE_HEIGHT_RATIO;
+                    
+                    this.cursorY -= 2;
+                    this.checkPageBreak(heightNeeded);
+                    
+                    this.doc.textWithLink(lines[0], MARGIN + 10, this.cursorY, { url: uri });
+                    this.cursorY += heightNeeded + 4;
+                }
+            });
+        }
+    }
 
     addFooters() {
         const pageCount = this.doc.getNumberOfPages();
@@ -284,7 +316,7 @@ class PdfBuilder {
         this.addTitlePage();
         buildSteps.forEach(step => step());
         this.addFooters();
-        this.doc.save(`BookmarketingAI_${this.sectionTitle.replace(/\s/g, '')}_${this.bookTitle.replace(/[^a-z0-9]/gi, '_')}.pdf`);
+        this.doc.save(`BookmarketingAI_${this.sectionTitle.replace(/\s/g, '')}_${this.documentTitle.replace(/[^a-z0-9]/gi, '_').substring(0, 30)}.pdf`);
     }
 }
 
@@ -316,6 +348,14 @@ export const exportAssetsToPDF = (plan: any, bookTitle: string): Promise<void> =
     return new Promise((resolve) => {
         const builder = new PdfBuilder(plan, bookTitle, 'Asset Generation');
         builder.build([() => builder.addAssets()]);
+        resolve();
+    });
+};
+
+export const exportResearchToPDF = (result: { text: string; sources: any[] }, query: string): Promise<void> => {
+    return new Promise((resolve) => {
+        const builder = new PdfBuilder({}, query, 'Market Intelligence Report');
+        builder.build([() => builder.addResearch(result)]);
         resolve();
     });
 };

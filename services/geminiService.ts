@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, GenerateContentResponse, Modality, Chat, Type, GenerateImagesResponse, Operation } from "@google/genai";
 
 const getGenAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY as string });
@@ -365,6 +364,8 @@ export const analyzeManuscript = async (manuscriptFile: File): Promise<string> =
     
     OBJECTIVE: I have provided a book manuscript. Your task is to perform a deep, multi-faceted analysis and generate a comprehensive "Book DNA" document. This document will serve as the single source of truth for all subsequent marketing material generation. Your analysis must be incredibly specific, insightful, and structured clearly in Markdown format.
     
+    IMPORTANT FORMATTING NOTE: Within each major section (e.g., "2. Deep Content Analysis"), please ensure there is a blank line (a double newline) between each sub-topic (e.g., between "Primary & Secondary Themes" and "Core Emotional Arcs"). Additionally, within each sub-topic, treat distinct points or themes as separate paragraphs by separating them with a blank line. This is crucial for readability.
+
     TASK: Generate a Markdown document with the following sections:
     
     # Book DNA: [Book Title if you can infer it, otherwise "The Manuscript"]
@@ -416,7 +417,7 @@ const FULL_CAMPAIGN_SCHEMA = {
                     properties: {
                         primaryTheme: { type: Type.STRING },
                         secondaryThemes: { type: Type.ARRAY, items: { type: Type.STRING } },
-                        characterArcs: { type: Type.STRING, description: "Analysis of the core emotional arcs of the main characters." }
+                        characterArcs: { type: Type.STRING, description: "Analysis of the core emotional arcs of the main characters. Format as Markdown with paragraphs separated by blank lines." }
                     }
                 },
                 targetAudienceProfile: { 
@@ -426,7 +427,7 @@ const FULL_CAMPAIGN_SCHEMA = {
                         demographics: { type: Type.STRING },
                         psychographics: { type: Type.STRING },
                         mediaHabits: { type: Type.STRING },
-                        dayInTheLife: { type: Type.STRING, description: "A narrative 'day in the life' of the ideal reader." }
+                        dayInTheLife: { type: Type.STRING, description: "A narrative 'day in the life' of the ideal reader. Format as Markdown with paragraphs separated by blank lines." }
                     }
                 },
                 competitiveAnalysis: {
@@ -438,14 +439,14 @@ const FULL_CAMPAIGN_SCHEMA = {
                             author: { type: Type.STRING },
                             strengths: { type: Type.STRING },
                             weaknesses: { type: Type.STRING },
-                            differentiation: { type: Type.STRING, description: "How this book is different and better." }
+                            differentiation: { type: Type.STRING, description: "How this book is different and better. Format as Markdown with paragraphs separated by blank lines." }
                         }
                     }
                 },
                 uniqueSellingProposition: { type: Type.STRING, description: "A concise USP for the book." },
-                marketOpportunity: { type: Type.STRING },
-                sensitivityAnalysis: { type: Type.STRING, description: "Potential cultural or sensitivity issues and recommendations." },
-                commercialPotential: { type: Type.STRING, description: "Evaluation of the book's sales potential." }
+                marketOpportunity: { type: Type.STRING, description: "An analysis of the market opportunity. Format as Markdown with paragraphs separated by blank lines." },
+                sensitivityAnalysis: { type: Type.STRING, description: "Potential cultural or sensitivity issues and recommendations. Format as Markdown with paragraphs separated by blank lines." },
+                commercialPotential: { type: Type.STRING, description: "Evaluation of the book's sales potential. Format as Markdown with paragraphs separated by blank lines." }
             }
         },
         step2_campaignArchitecture: {
@@ -477,8 +478,8 @@ const FULL_CAMPAIGN_SCHEMA = {
                         }
                     }
                 },
-                viralPlan_90Day: { type: Type.STRING, description: "Strategy for days 31-90." },
-                millionReaderRoadmap_365Day: { type: Type.STRING, description: "Long-term strategy for the first year." },
+                viralPlan_90Day: { type: Type.STRING, description: "Strategy for days 31-90. Format as Markdown with paragraphs separated by blank lines." },
+                millionReaderRoadmap_365Day: { type: Type.STRING, description: "Long-term strategy for the first year. Format as Markdown with paragraphs separated by blank lines." },
                 budgetAllocation: { 
                     type: Type.OBJECT,
                     properties: {
@@ -489,7 +490,7 @@ const FULL_CAMPAIGN_SCHEMA = {
                     }
                 },
                 performanceMetrics: { type: Type.ARRAY, items: { type: Type.STRING }, description: "List of key KPIs to track." },
-                riskAssessment: { type: Type.STRING, description: "Potential risks and mitigation strategies." }
+                riskAssessment: { type: Type.STRING, description: "Potential risks and mitigation strategies. Format as Markdown with paragraphs separated by blank lines." }
             }
         },
         step3_multiChannelCampaigns: {
@@ -500,7 +501,7 @@ const FULL_CAMPAIGN_SCHEMA = {
                     properties: {
                         keywords: { type: Type.ARRAY, items: { type: Type.STRING } },
                         categories: { type: Type.ARRAY, items: { type: Type.STRING } },
-                        advertisingPlan: { type: Type.STRING, description: "A detailed Amazon Ads campaign strategy." },
+                        advertisingPlan: { type: Type.STRING, description: "A detailed Amazon Ads campaign strategy. Format as Markdown with paragraphs separated by blank lines." },
                         sampleAdGroups: {
                             type: Type.ARRAY,
                             items: {
@@ -521,7 +522,7 @@ const FULL_CAMPAIGN_SCHEMA = {
                         type: Type.OBJECT,
                         properties: {
                             platform: { type: Type.STRING },
-                            strategy: { type: Type.STRING },
+                            strategy: { type: Type.STRING, description: "The platform-specific strategy. Format as Markdown with paragraphs separated by blank lines." },
                             contentCalendar_FirstWeek: {
                                 type: Type.ARRAY,
                                 items: {
@@ -545,15 +546,15 @@ const FULL_CAMPAIGN_SCHEMA = {
                         properties: {
                             day: { type: Type.INTEGER },
                             subject: { type: Type.STRING },
-                            body: { type: Type.STRING, description: "The full HTML/Markdown body of the email." }
+                            body: { type: Type.STRING, description: "The full HTML/Markdown body of the email. Use Markdown for formatting and ensure paragraphs are separated by blank lines." }
                         }
                     }
                 },
                 influencerStrategy: {
                     type: Type.OBJECT,
                     properties: {
-                        idealProfile: { type: Type.STRING },
-                        outreachTemplate: { type: Type.STRING },
+                        idealProfile: { type: Type.STRING, description: "A profile of the ideal influencer. Format as Markdown with paragraphs separated by blank lines." },
+                        outreachTemplate: { type: Type.STRING, description: "The outreach template. Format as Markdown with paragraphs separated by blank lines." },
                         influencerArchetypes: {
                             type: Type.ARRAY,
                             items: {
@@ -576,7 +577,7 @@ const FULL_CAMPAIGN_SCHEMA = {
                             title: { type: Type.STRING },
                             description: { type: Type.STRING },
                             targetKeywords: { type: Type.ARRAY, items: { type: Type.STRING } },
-                            briefOutline: { type: Type.STRING }
+                            briefOutline: { type: Type.STRING, description: "A brief outline for the content. Format as Markdown with paragraphs separated by blank lines." }
                         }
                     }
                 }
@@ -608,18 +609,18 @@ const FULL_CAMPAIGN_SCHEMA = {
                         },
                     }
                 },
-                visualAssetGuidelines: { type: Type.STRING, description: "Guidelines and ideas for creating visual assets." },
+                visualAssetGuidelines: { type: Type.STRING, description: "Guidelines and ideas for creating visual assets. Format as Markdown with paragraphs separated by blank lines." },
                 videoTrailerScripts: {
                     type: Type.ARRAY,
                     items: {
                         type: Type.OBJECT,
                         properties: {
                             concept: { type: Type.STRING, description: "e.g., 'Plot-Focused', 'Theme-Focused'" },
-                            script: { type: Type.STRING, description: "A complete 30-second video script with scene descriptions." }
+                            script: { type: Type.STRING, description: "A complete 30-second video script with scene descriptions. Format as Markdown with paragraphs separated by blank lines." }
                         }
                     }
                 },
-                pressReleaseTemplate: { type: Type.STRING, description: "A ready-to-use press release template." },
+                pressReleaseTemplate: { type: Type.STRING, description: "A ready-to-use press release template. Format as Markdown with paragraphs separated by blank lines." },
                 implementationTimeline_30Day: {
                     type: Type.ARRAY,
                     items: {
@@ -737,7 +738,7 @@ const FULL_WEBSITE_SCHEMA = {
             type: Type.OBJECT,
             description: "A section to sell the book itself.",
             properties: {
-                summary: { type: Type.STRING, description: "An extended, enticing summary of the book." },
+                summary: { type: Type.STRING, description: "An extended, enticing summary of the book. Format as Markdown with paragraphs separated by blank lines." },
                 keyThemes: { type: Type.ARRAY, items: { type: Type.STRING }, description: "A list of 3-5 key themes explored in the book." }
             }
         },
@@ -745,7 +746,7 @@ const FULL_WEBSITE_SCHEMA = {
             type: Type.OBJECT,
             description: "A section to connect the reader with the author.",
             properties: {
-                bioSuggestion: { type: Type.STRING, description: "A short paragraph suggesting how the author should frame their bio to connect with readers of this book." },
+                bioSuggestion: { type: Type.STRING, description: "A short paragraph suggesting how the author should frame their bio to connect with readers of this book. Format as Markdown with paragraphs separated by blank lines." },
                 photoStyle: { type: Type.STRING, description: "A suggestion for the author's photo style (e.g., 'Professional and serious', 'Friendly and approachable', 'Mysterious and atmospheric')." }
             }
         },
@@ -805,7 +806,7 @@ const FULL_FUNNEL_SCHEMA = {
     type: Type.OBJECT,
     properties: {
         funnelName: { type: Type.STRING, description: "A catchy, memorable name for this specific sales funnel." },
-        targetAudienceSummary: { type: Type.STRING, description: "A concise summary of the ideal reader avatar for this book, focusing on their primary pain points and desires." },
+        targetAudienceSummary: { type: Type.STRING, description: "A concise summary of the ideal reader avatar for this book, focusing on their primary pain points and desires. Format as Markdown with paragraphs separated by blank lines." },
         topOfFunnel: {
             type: Type.OBJECT,
             properties: {
@@ -814,7 +815,7 @@ const FULL_FUNNEL_SCHEMA = {
                     properties: {
                         title: { type: Type.STRING, description: "A compelling title for a free resource to attract subscribers (e.g., 'The First Chapter', 'A Secret Map from the Book')." },
                         format: { type: Type.STRING, description: "The format of the lead magnet (e.g., 'PDF Chapter', 'Exclusive Short Story', 'Character Profile Dossier')." },
-                        description: { type: Type.STRING, description: "A short, persuasive description of the lead magnet." }
+                        description: { type: Type.STRING, description: "A short, persuasive description of the lead magnet. Format as Markdown with paragraphs separated by blank lines." }
                     }
                 },
                 adCopy: {
@@ -824,7 +825,7 @@ const FULL_FUNNEL_SCHEMA = {
                         properties: {
                             platform: { type: Type.STRING, description: "The target ad platform (e.g., 'Facebook', 'TikTok', 'Instagram')." },
                             headline: { type: Type.STRING, description: "A scroll-stopping headline for the ad." },
-                            body: { type: Type.STRING, description: "The persuasive body copy for the ad." }
+                            body: { type: Type.STRING, description: "The persuasive body copy for the ad. Format as Markdown with paragraphs separated by blank lines." }
                         }
                     }
                 }
@@ -837,7 +838,7 @@ const FULL_FUNNEL_SCHEMA = {
                     type: Type.OBJECT,
                     properties: {
                         headline: { type: Type.STRING, description: "The main headline for the lead magnet landing page." },
-                        subheadline: { type: Type.STRING, description: "A supporting subheadline." },
+                        subheadline: { type: Type.STRING, description: "A supporting subheadline. Format as Markdown with paragraphs separated by blank lines." },
                         bulletPoints: { type: Type.ARRAY, items: { type: Type.STRING }, description: "3-5 benefit-driven bullet points." },
                         callToAction: { type: Type.STRING, description: "The call-to-action text for the sign-up button." }
                     }
@@ -850,7 +851,7 @@ const FULL_FUNNEL_SCHEMA = {
                         properties: {
                             day: { type: Type.INTEGER, description: "The day in the sequence this email is sent (e.g., 1, 3, 5)." },
                             subject: { type: Type.STRING, description: "An attention-grabbing subject line." },
-                            body: { type: Type.STRING, description: "The full body of the email, written in a persuasive and engaging tone." }
+                            body: { type: Type.STRING, description: "The full body of the email, written in a persuasive and engaging tone. Format as Markdown with paragraphs separated by blank lines." }
                         }
                     }
                 }
@@ -873,7 +874,7 @@ const FULL_FUNNEL_SCHEMA = {
                     properties: {
                         title: { type: Type.STRING, description: "Title of a small, complementary product offered at checkout." },
                         pricePoint: { type: Type.STRING, description: "The price of the order bump (e.g., '$7')." },
-                        description: { type: Type.STRING, description: "A short description of the order bump." }
+                        description: { type: Type.STRING, description: "A short description of the order bump. Format as Markdown with paragraphs separated by blank lines." }
                     }
                 },
                 oneTimeOfferUpsell: {
@@ -881,7 +882,7 @@ const FULL_FUNNEL_SCHEMA = {
                     properties: {
                         title: { type: Type.STRING, description: "Title of a higher-value product offered after the initial purchase." },
                         pricePoint: { type: Type.STRING, description: "The price of the upsell (e.g., '$27')." },
-                        description: { type: Type.STRING, description: "A compelling description of the upsell." }
+                        description: { type: Type.STRING, description: "A compelling description of the upsell. Format as Markdown with paragraphs separated by blank lines." }
                     }
                 }
             }
