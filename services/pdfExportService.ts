@@ -27,6 +27,15 @@ class PdfBuilder {
         this.documentTitle = documentTitle || "Untitled";
         this.sectionTitle = sectionTitle;
     }
+
+    cleanMarkdown(text: string): string {
+        if (!text) return '';
+        return String(text)
+            .replace(/\*\*(.*?)\*\*/g, '$1') // Bold **text**
+            .replace(/\*(.*?)\*/g, '$1')   // Italic *text*
+            .replace(/\[(.*?)\]\(.*?\)/g, '$1') // Link [text](url)
+            .trim();
+    }
     
     // Utility to check if a new page is needed before adding content
     checkPageBreak(heightNeeded: number) {
@@ -53,7 +62,8 @@ class PdfBuilder {
         this.doc.setFontSize(FONT_SIZES.h1);
         this.doc.setTextColor(PRIMARY_COLOR);
 
-        const lines = this.doc.splitTextToSize(text, MAX_WIDTH);
+        const cleanedText = this.cleanMarkdown(text);
+        const lines = this.doc.splitTextToSize(cleanedText, MAX_WIDTH);
         const textHeight = lines.length * FONT_SIZES.h1 * 0.35 * LINE_HEIGHT_RATIO;
         
         this.checkPageBreak(textHeight);
@@ -68,7 +78,8 @@ class PdfBuilder {
         this.doc.setFontSize(FONT_SIZES.h2);
         this.doc.setTextColor(TEXT_COLOR);
 
-        const lines = this.doc.splitTextToSize(text, MAX_WIDTH);
+        const cleanedText = this.cleanMarkdown(text);
+        const lines = this.doc.splitTextToSize(cleanedText, MAX_WIDTH);
         const textHeight = lines.length * FONT_SIZES.h2 * 0.35 * LINE_HEIGHT_RATIO;
         
         this.checkPageBreak(textHeight);
@@ -83,7 +94,8 @@ class PdfBuilder {
         this.doc.setFontSize(FONT_SIZES.h3);
         this.doc.setTextColor(TEXT_COLOR);
 
-        const lines = this.doc.splitTextToSize(text, MAX_WIDTH);
+        const cleanedText = this.cleanMarkdown(text);
+        const lines = this.doc.splitTextToSize(cleanedText, MAX_WIDTH);
         const textHeight = lines.length * FONT_SIZES.h3 * 0.35 * LINE_HEIGHT_RATIO;
 
         this.checkPageBreak(textHeight);
@@ -103,7 +115,8 @@ class PdfBuilder {
         
         textArray.forEach(line => {
              const prefix = isList ? '•  ' : '';
-             const lines = this.doc.splitTextToSize(prefix + String(line), MAX_WIDTH - (isList ? 5 : 0));
+             const cleanedLine = this.cleanMarkdown(String(line));
+             const lines = this.doc.splitTextToSize(prefix + cleanedLine, MAX_WIDTH - (isList ? 5 : 0));
              const heightNeeded = lines.length * FONT_SIZES.body * 0.35 * LINE_HEIGHT_RATIO;
              this.checkPageBreak(heightNeeded);
              this.doc.text(lines, MARGIN + (isList ? 5 : 0), this.cursorY);
@@ -116,20 +129,19 @@ class PdfBuilder {
     addMarkdown(text: string) {
         const lines = text.split('\n');
         lines.forEach(line => {
-            line = line.trim();
-            if (line.startsWith('# ')) {
-                this.addH1(line.substring(2));
-            } else if (line.startsWith('## ')) {
-                this.addH2(line.substring(3));
-            } else if (line.startsWith('### ')) {
-                this.addH3(line.substring(4));
-            } else if (line.startsWith('- **')) { // Bold list item
-                const cleanLine = line.replace(/- \*\*(.*?)\*\*:/, '$1:');
-                this.addH3(cleanLine);
-            } else if (line.startsWith('- ')) {
-                this.addBody(line.substring(2), true);
-            } else if (line.trim() !== '') {
-                this.addBody(line);
+            const trimmedLine = line.trim();
+            if (trimmedLine.startsWith('# ')) {
+                this.addH1(trimmedLine.substring(2));
+            } else if (trimmedLine.startsWith('## ')) {
+                this.addH2(trimmedLine.substring(3));
+            } else if (trimmedLine.startsWith('### ')) {
+                this.addH3(trimmedLine.substring(4));
+            } else if (trimmedLine.startsWith('- **')) { // Treat as heading
+                this.addH3(trimmedLine.substring(2)); // Pass "**Title:**" to addH3, which cleans it
+            } else if (trimmedLine.startsWith('- ')) { // Treat as list item
+                this.addBody(trimmedLine.substring(2), true);
+            } else if (trimmedLine !== '') {
+                this.addBody(trimmedLine);
             } else {
                 this.cursorY += 4; // empty line space
             }
@@ -151,7 +163,13 @@ class PdfBuilder {
         this.doc.text(this.sectionTitle, PAGE_WIDTH / 2, 130, { align: 'center' });
         
         this.doc.setFontSize(FONT_SIZES.small);
-        this.doc.text(`Generated on: ${new Date().toLocaleDateString()}`, PAGE_WIDTH / 2, 140, { align: 'center' });
+        this.doc.text(`Generated on: ${new Date().toLocaleDateString()}`, PAGE_WIDTH / 2, 145, { align: 'center' });
+
+        // Add the tagline
+        this.doc.setFont('helvetica', 'italic');
+        this.doc.setFontSize(FONT_SIZES.h3);
+        this.doc.setTextColor('#FFFFFF');
+        this.doc.text('Your Book, Our Software. One Million Readers!', PAGE_WIDTH / 2, 180, { align: 'center' });
 
         // Branding
         this.doc.setFontSize(FONT_SIZES.body);

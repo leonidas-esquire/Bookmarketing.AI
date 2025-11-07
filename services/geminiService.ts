@@ -272,9 +272,10 @@ export const generateContent = async (prompt: string, model: 'gemini-2.5-pro' | 
 
 export const researchWithGoogle = async (query: string): Promise<{ text: string, sources: any[] }> => {
     const ai = getGenAI();
+    const fullQuery = `Please format your response using clear Markdown. Use double newlines to separate paragraphs, headings, and list items for maximum readability. Here is my research query:\n\n"${query}"`;
     const response: GenerateContentResponse = await apiCallWrapper(() => ai.models.generateContent({
         model: "gemini-2.5-flash",
-        contents: query,
+        contents: fullQuery,
         config: {
             tools: [{ googleSearch: {} }],
         },
@@ -364,9 +365,32 @@ export const analyzeManuscript = async (manuscriptFile: File): Promise<string> =
     
     OBJECTIVE: I have provided a book manuscript. Your task is to perform a deep, multi-faceted analysis and generate a comprehensive "Book DNA" document. This document will serve as the single source of truth for all subsequent marketing material generation. Your analysis must be incredibly specific, insightful, and structured clearly in Markdown format.
     
-    IMPORTANT FORMATTING NOTE: Within each major section (e.g., "2. Deep Content Analysis"), please ensure there is a blank line (a double newline) between each sub-topic (e.g., between "Primary & Secondary Themes" and "Core Emotional Arcs"). Additionally, within each sub-topic, treat distinct points or themes as separate paragraphs by separating them with a blank line. This is crucial for readability.
+    ULTRA-IMPORTANT FORMATTING RULES (You MUST follow these precisely):
+    1.  **Use Double Newlines:** ALWAYS use a blank line (a double newline) to create vertical space between paragraphs, headings, sub-headings, and list items. This is the most critical rule for readability.
+    2.  **Space After Headings:** After a bolded heading (e.g., **"Genre & Positioning:"**), there MUST be a blank line before the content begins.
+    3.  **Space Between Items:** Within a section, each distinct piece of information (e.g., "Primary Genre", "Sub-genres") MUST be treated as its own paragraph, separated from the others by a blank line.
 
-    TASK: Generate a Markdown document with the following sections:
+    EXAMPLE of the required formatting:
+    
+    ## 1. Core Identity
+    
+    - **Genre & Positioning:**
+    
+      Primary Genre: Business & Technology Management
+      
+      Sub-genres: Software Development Methodology, Technical Project Management, DevOps & CI/CD, Knowledge Management
+      
+      This book is positioned as the definitive, actionable guide for navigating the "post-AI" software development landscape...
+    
+    - **Unique Selling Proposition (USP):**
+    
+      The GitPolish Protocol is the only systematic, end-to-end methodology for transforming chaotic software repositories...
+      
+    - **Logline:**
+    
+      In an era where AI generates code faster than humans can understand it, a new protocol provides the five pillars and seven phases necessary for technical leaders...
+
+    TASK: Generate a Markdown document with the following sections, strictly adhering to the formatting rules and example above:
     
     # Book DNA: [Book Title if you can infer it, otherwise "The Manuscript"]
     
