@@ -50,8 +50,13 @@ export const Header: React.FC<HeaderProps> = ({ user, activeBook, onLogout, setA
         </div>
       </div>
        <div className="flex items-center gap-4">
-         <button onClick={() => setActiveTool(null)} className="text-indigo-300 hover:text-white transition-colors" title="Dashboard">
-            <i className="fas fa-th-large text-xl"></i>
+         <button 
+            onClick={() => setActiveTool(null)} 
+            className="flex items-center gap-2 bg-gray-800/50 hover:bg-gray-700/50 px-3 py-1.5 rounded-lg border border-transparent hover:border-indigo-500 transition-colors"
+            title="Dashboard"
+          >
+            <i className="fas fa-grip text-xl text-indigo-300"></i>
+            <span className="hidden sm:inline font-medium text-white">Dashboard</span>
          </button>
          <div className="relative" ref={dropdownRef}>
             <button onClick={() => setIsDropdownOpen(!isDropdownOpen)} className="flex items-center gap-3 bg-gray-800/50 hover:bg-gray-700/50 px-3 py-1.5 rounded-lg border border-transparent hover:border-indigo-500 transition-colors">
