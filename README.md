@@ -4,6 +4,36 @@
 
 > **Bookmarketing.AI** is your all-in-one solution for turning your manuscript into a bestseller. We provide a suite of AI-powered tools designed to handle the complexities of book marketing, from audience analysis to targeted outreach. Our platform empowers authors to focus on what they do best—writing—while our intelligent software works to connect their stories with one million readers. Your journey to becoming a bestselling author starts here.
 
+## Key Features
+
+**Bookmarketing.AI** leverages the power of the Google Gemini API to offer a comprehensive suite of AI-driven marketing tools. These features are designed to streamline your marketing efforts and help you connect with a global audience.
+
+### Foundational Strategy
+
+-   **Book DNA Analyzer** — Performs a deep analysis of your manuscript to define its core identity, target audience, and market position
+-   **Campaign Architecture** — Architects detailed launch plans, long-term marketing roadmaps, and strategic budget allocations based on your book's unique DNA
+-   **Multi-Channel Strategy** — Generates customized marketing plans for major platforms like Amazon, social media, email, and influencer networks
+-   **Asset Generation** — Creates a complete library of ready-to-use marketing materials, including blurbs, ad copy, social media posts, and video scripts
+
+### Creative Tools
+
+-   **Marketing Video Creator** — Transforms your manuscript into a comprehensive video marketing campaign plan, from concept to script
+-   **A/B Cover Optimizer** — Empowers you to edit your cover art and generate multiple variations for data-driven A/B testing on retail platforms
+-   **Multi-Channel Audio AI** — Converts text excerpts into high-quality audio for podcasts, social media content, and audiobook samples
+
+### Intelligence & Sales
+
+-   **Market Intelligence AI** — Provides real-time insights into competitor positioning, emerging market trends, and reader conversations
+-   **Marketability Analyzer** — Delivers data-driven feedback on your book cover's genre-fit and commercial appeal
+-   **Reader Journey AI** — Architects a complete, psychology-driven sales funnel to guide potential readers from awareness to purchase
+-   **Author Sales Platform** — Enables you to systematically scale your income by selling your book directly to readers through a high-converting checkout process
+
+### Distribution & Scaling
+
+-   **Author Hub Builder** — Integrates all your marketing channels into a high-converting, central author website
+-   **Book Distributor** — Generates and sends professional ONIX metadata packages to major retailers, ensuring your book is discoverable
+-   **Content Scaler AI** — Transcribes your spoken ideas into blog posts, social media updates, and newsletters to effortlessly scale your content production
+
 ## Technology Stack
 
 This project is built with a modern, scalable technology stack:
