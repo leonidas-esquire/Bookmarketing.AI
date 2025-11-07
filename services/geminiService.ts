@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, GenerateContentResponse, Modality, Chat, Type, GenerateImagesResponse, Operation } from "@google/genai";
 
 const getGenAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY as string });
@@ -635,71 +636,68 @@ const FULL_CAMPAIGN_SCHEMA = {
     }
 };
 
-const CAMPAIGN_PART1_SCHEMA = {
+const ARCHITECTURE_SCHEMA = {
     type: Type.OBJECT,
     properties: {
-        step1_bookAnalysis: FULL_CAMPAIGN_SCHEMA.properties.step1_bookAnalysis,
         step2_campaignArchitecture: FULL_CAMPAIGN_SCHEMA.properties.step2_campaignArchitecture,
     }
 };
 
-const CAMPAIGN_PART2_SCHEMA = {
+const STRATEGY_SCHEMA = {
     type: Type.OBJECT,
     properties: {
         step3_multiChannelCampaigns: FULL_CAMPAIGN_SCHEMA.properties.step3_multiChannelCampaigns,
+    }
+};
+
+const ASSETS_SCHEMA = {
+    type: Type.OBJECT,
+    properties: {
         step4_assetGeneration: FULL_CAMPAIGN_SCHEMA.properties.step4_assetGeneration,
     }
 };
 
-export const generateFullCampaignPlan = async (analysisText: string, onProgress: (progress: { message: string }) => void): Promise<any> => {
+const generateCampaignPart = async (analysisText: string, prompt: string, schema: any, context: string): Promise<any> => {
     const ai = getGenAI();
-
-    // --- Call 1: Analysis and Architecture ---
-    onProgress({ message: "Step 1 of 2: Analyzing book DNA and architecting campaign structure..." });
-    const prompt1 = `
-    ROLE: You are "Athena", a world-class AI marketing strategist and campaign architect.
-    OBJECTIVE: I have provided a comprehensive "Book DNA" analysis document. Your task is to use ONLY this analysis to generate the first half of a go-to-market strategy, focusing on deep analysis and high-level campaign architecture.
-    TASK: Generate the "step1_bookAnalysis" and "step2_campaignArchitecture" sections of the marketing plan. Your output must be a single, valid JSON object that strictly adheres to the provided schema for these two sections.
-    `;
-    const modelConfig1 = {
+    const modelConfig = {
         model: 'gemini-2.5-pro',
-        contents: { parts: [{ text: prompt1 }, { text: analysisText }] },
+        contents: { parts: [{ text: prompt }, { text: analysisText }] },
         config: {
             responseMimeType: "application/json",
-            responseSchema: CAMPAIGN_PART1_SCHEMA,
+            responseSchema: schema,
             maxOutputTokens: 8192,
             thinkingConfig: { thinkingBudget: 8192 }
         },
     };
-    const response1: GenerateContentResponse = await apiCallWrapper(() => ai.models.generateContent(modelConfig1), 'Campaign Plan Generation (Part 1)');
-    const part1Result = handleJsonResponse(response1);
+    const response: GenerateContentResponse = await apiCallWrapper(() => ai.models.generateContent(modelConfig), context);
+    return handleJsonResponse(response);
+};
 
-    // --- Call 2: Multi-channel Strategy and Assets ---
-    onProgress({ message: "Step 2 of 2: Generating multi-channel strategies and creative assets..." });
-    const prompt2 = `
+export const generateCampaignArchitecture = (analysisText: string) => {
+    const prompt = `
     ROLE: You are "Athena", a world-class AI marketing strategist and campaign architect.
-    OBJECTIVE: I have provided the original "Book DNA" analysis and the first half of a marketing plan (Analysis & Architecture). Your task is to use ALL of this context to generate the second, more creative half of the strategy: detailed multi-channel campaigns and specific marketing assets.
-    TASK: Generate the "step3_multiChannelCampaigns" and "step4_assetGeneration" sections of the marketing plan. Your strategies must be directly inspired by the provided analysis. Your output must be a single, valid JSON object that strictly adheres to the provided schema for these two sections.
-
-    CONTEXT FROM PREVIOUS STEP:
-    ${JSON.stringify(part1Result, null, 2)}
+    OBJECTIVE: I have provided a comprehensive "Book DNA" analysis document. Your task is to use ONLY this analysis to generate the high-level campaign architecture for a go-to-market strategy.
+    TASK: Generate ONLY the "step2_campaignArchitecture" section of the marketing plan. Your output must be a single, valid JSON object that strictly adheres to the provided schema.
     `;
-    const modelConfig2 = {
-        model: 'gemini-2.5-pro',
-        contents: { parts: [{ text: prompt2 }, { text: analysisText }] },
-        config: {
-            responseMimeType: "application/json",
-            responseSchema: CAMPAIGN_PART2_SCHEMA,
-            maxOutputTokens: 8192,
-            thinkingConfig: { thinkingBudget: 8192 }
-        },
-    };
-    const response2: GenerateContentResponse = await apiCallWrapper(() => ai.models.generateContent(modelConfig2), 'Campaign Plan Generation (Part 2)');
-    const part2Result = handleJsonResponse(response2);
-    
-    onProgress({ message: "Finalizing your plan..." });
-    // --- Combine and return ---
-    return { ...part1Result, ...part2Result };
+    return generateCampaignPart(analysisText, prompt, ARCHITECTURE_SCHEMA, 'Campaign Architecture Generation');
+};
+
+export const generateMultiChannelStrategy = (analysisText: string) => {
+    const prompt = `
+    ROLE: You are "Athena", a world-class AI marketing strategist specializing in channel-specific tactics.
+    OBJECTIVE: I have provided a comprehensive "Book DNA" analysis document. Your task is to use ONLY this analysis to generate detailed, multi-channel marketing campaigns.
+    TASK: Generate ONLY the "step3_multiChannelCampaigns" section of the marketing plan. Your strategies must be directly inspired by the provided analysis. Your output must be a single, valid JSON object that strictly adheres to the provided schema.
+    `;
+    return generateCampaignPart(analysisText, prompt, STRATEGY_SCHEMA, 'Multi-Channel Strategy Generation');
+};
+
+export const generateAssetGeneration = (analysisText: string) => {
+    const prompt = `
+    ROLE: You are "Athena", a world-class AI copywriter and creative director.
+    OBJECTIVE: I have provided a comprehensive "Book DNA" analysis document. Your task is to use ONLY this analysis to generate a complete library of creative marketing assets.
+    TASK: Generate ONLY the "step4_assetGeneration" section of the marketing plan. All creative assets must be directly inspired by the provided analysis. Your output must be a single, valid JSON object that strictly adheres to the provided schema.
+    `;
+    return generateCampaignPart(analysisText, prompt, ASSETS_SCHEMA, 'Asset Generation');
 };
 
 

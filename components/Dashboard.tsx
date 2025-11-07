@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Tool, User, Book } from '../types';
 import { ToolCard } from './ToolCard';
@@ -9,24 +10,27 @@ interface DashboardProps {
 }
 
 const tools: Tool[] = [
-  // Creative & Psychological
-  { id: 'image-generator', title: 'Creative Ad Studio', description: 'Generate unique ad creatives, concept art, and social media visuals. Fueling creative innovation.', icon: 'fa-magic' },
-  { id: 'copywriter', title: 'Psychological Copy AI', description: 'Generate blurbs, ads, and social posts using proven psychological triggers to maximize engagement.', icon: 'fa-brain' },
-  { id: 'video-generator', title: 'Viral Video Generator', description: 'Create short, emotionally engaging video clips optimized for virality on TikTok, Reels, and Shorts.', icon: 'fa-film' },
+  // Foundational Strategy
+  { id: 'book-dna-analyzer', title: 'Book DNA Analyzer', description: 'Perform a deep analysis of your manuscript to define its core identity, audience, and market position.', icon: 'fa-dna' },
+  { id: 'campaign-architecture', title: 'Campaign Architecture', description: 'Architect launch plans, long-term roadmaps, and budget strategies based on your Book DNA.', icon: 'fa-sitemap' },
+  { id: 'multi-channel-strategy', title: 'Multi-Channel Strategy', description: 'Generate detailed plans for Amazon, social media, email, and influencers.', icon: 'fa-share-alt' },
+  { id: 'asset-generation', title: 'Asset Generation', description: 'Create a library of ready-to-use marketing copy, blurbs, ad hooks, and video scripts.', icon: 'fa-file-alt' },
+
+  // Creative Tools
+  { id: 'marketing-video-creator', title: 'Marketing Video Creator', description: 'Turn your manuscript into a complete video marketing campaign plan.', icon: 'fa-bullhorn' },
+  { id: 'image-editor', title: 'A/B Cover Optimizer', description: 'Edit your cover art and generate variations for data-driven A/B testing on retail sites.', icon: 'fa-chart-pie' },
   { id: 'audiobook-creator', title: 'Multi-Channel Audio AI', description: 'Convert text excerpts into audio for podcasts, social media, and audiobook samples.', icon: 'fa-headphones-alt' },
-  
-  // Data & Intelligence
+
+  // Intelligence & Sales
   { id: 'market-research', title: 'Market Intelligence AI', description: 'Get real-time insights on competitor positioning, market trends, and reader conversations.', icon: 'fa-chart-line' },
   { id: 'cover-analyzer', title: 'Marketability Analyzer', description: 'Get real-time, data-driven feedback on your book cover\'s genre-fit and commercial appeal.', icon: 'fa-search-dollar' },
-  { id: 'image-editor', title: 'A/B Cover Optimizer', description: 'Edit your cover art and generate variations for data-driven A/B testing on retail sites.', icon: 'fa-chart-pie' },
-  { id: 'video-analyzer', title: 'Performance Optimizer AI', description: 'Analyze video, ad, and email performance data to receive continuous optimization recommendations.', icon: 'fa-tachometer-alt', comingSoon: true },
-  
-  // Scaling & Integration
-  { id: 'funnel-builder', title: 'Reader Journey AI', description: 'Architect a complete, psychology-driven sales funnel to guide readers from awareness to purchase.', icon: 'fa-sitemap' },
-  { id: 'website-builder', title: 'Author Hub Builder', description: 'Integrate all your marketing channels into a high-converting, central author website.', icon: 'fa-desktop' },
+  { id: 'funnel-builder', title: 'Reader Journey AI', description: 'Architect a complete, psychology-driven sales funnel to guide readers from awareness to purchase.', icon: 'fa-route' },
   { id: 'direct-sales-channel', title: 'Author Sales Platform', description: 'Systematically scale your income by selling your book directly to readers with a high-converting checkout.', icon: 'fa-store' },
-  { id: 'audio-transcriber', title: 'Content Scaler AI', description: 'Transcribe spoken ideas into blog posts, social media updates, and newsletters to scale content production.', icon: 'fa-clone' },
+
+  // Distribution & Scaling
+  { id: 'website-builder', title: 'Author Hub Builder', description: 'Integrate all your marketing channels into a high-converting, central author website.', icon: 'fa-desktop' },
   { id: 'book-distributor', title: 'Book Distributor', description: 'Generate and send professional ONIX metadata packages to major retailers.', icon: 'fa-rocket' },
+  { id: 'audio-transcriber', title: 'Content Scaler AI', description: 'Transcribe spoken ideas into blog posts, social media updates, and newsletters to scale content production.', icon: 'fa-clone' },
 
 
   // PR & Outreach

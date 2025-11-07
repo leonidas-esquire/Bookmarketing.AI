@@ -1,8 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { Dashboard } from './components/Dashboard';
 import { ImageEditor } from './components/ImageEditor';
-import { ImageGenerator } from './components/ImageGenerator';
 import { VideoGenerator } from './components/VideoGenerator';
 import { ContentAnalyzer } from './components/ContentAnalyzer';
 import { MarketingCopywriter } from './components/MarketingCopywriter';
@@ -17,12 +17,15 @@ import { FunnelBuilder } from './components/FunnelBuilder';
 import { DirectSalesChannel } from './components/DirectSalesChannel';
 import { PublicSalesPage } from './components/PublicSalesPage';
 import { generateSalesData } from './services/salesDataService';
-import { LeftSidebar } from './components/LeftSidebar';
+import { SalesSidebar } from './components/SalesSidebar';
 import { AddBookModal } from './components/AddBookModal';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { ConfirmationModal } from './components/ConfirmationModal';
 import { BookDistributor } from './components/BookDistributor';
-import { CampaignGenerator } from './components/AudienceAnalyzer';
+import { BookDNAAnalyzer } from './components/BookDNAAnalyzer';
+import { CampaignArchitectureGenerator } from './components/CampaignArchitectureGenerator';
+import { MultiChannelStrategyGenerator } from './components/MultiChannelStrategyGenerator';
+import { AssetGenerator } from './components/AssetGenerator';
 import { MarketingVideoCreator } from './components/MarketingVideoCreator';
 
 
@@ -37,6 +40,7 @@ const App: React.FC = () => {
 
   const [salesData, setSalesData] = useState<Record<string, SalesRecord[]>>({});
   const [salesPageConfigs, setSalesPageConfigs] = useState<Record<string, SalesPageConfig | null>>({});
+  const [bookAnalyses, setBookAnalyses] = useState<Record<string, string | null>>({});
 
   // Load data from localStorage on initial render but don't auto-login
   useEffect(() => {
@@ -45,6 +49,7 @@ const App: React.FC = () => {
       const storedSalesData = localStorage.getItem('bookmarketing_salesData');
       const storedSalesConfigs = localStorage.getItem('bookmarketing_salesPageConfigs');
       const storedActiveBookId = localStorage.getItem('bookmarketing_activeBookId');
+      const storedBookAnalyses = localStorage.getItem('bookmarketing_bookAnalyses');
 
       if (storedUser) {
         const parsedUser: User = JSON.parse(storedUser);
@@ -63,6 +68,9 @@ const App: React.FC = () => {
         if (storedSalesConfigs) {
           setSalesPageConfigs(JSON.parse(storedSalesConfigs));
         }
+        if (storedBookAnalyses) {
+          setBookAnalyses(JSON.parse(storedBookAnalyses));
+        }
       }
     } catch (error) {
         console.error("Failed to load data from localStorage", error);
@@ -78,17 +86,24 @@ const App: React.FC = () => {
         if(activeBookId) localStorage.setItem('bookmarketing_activeBookId', activeBookId);
         localStorage.setItem('bookmarketing_salesData', JSON.stringify(salesData));
         localStorage.setItem('bookmarketing_salesPageConfigs', JSON.stringify(salesPageConfigs));
+        localStorage.setItem('bookmarketing_bookAnalyses', JSON.stringify(bookAnalyses));
       } catch (error) {
         console.error("Failed to save data to localStorage", error);
       }
     }
-  }, [user, activeBookId, salesData, salesPageConfigs, isAuthenticated]);
+  }, [user, activeBookId, salesData, salesPageConfigs, bookAnalyses, isAuthenticated]);
 
 
   const activeBook = user?.books.find(b => b.id === activeBookId) || null;
   const activeSalesData = activeBookId ? salesData[activeBookId] || [] : [];
   const activeSalesPageConfig = activeBookId ? salesPageConfigs[activeBookId] || null : null;
+  const activeBookAnalysis = activeBookId ? bookAnalyses[activeBookId] || null : null;
 
+  const handleUpdateBookAnalysis = (analysisText: string) => {
+    if (activeBookId) {
+        setBookAnalyses(prev => ({...prev, [activeBookId]: analysisText}));
+    }
+  };
 
   const handleLogin = (userData?: { name: string; email: string; bookTitle: string; genre: string; }) => {
     // If userData is provided, it's a new user registration
@@ -110,6 +125,7 @@ const App: React.FC = () => {
       const initialSales = generateSalesData(firstBook.title, firstBook.genre, 365);
       setSalesData({ [firstBook.id]: initialSales });
       setSalesPageConfigs({ [firstBook.id]: null });
+      setBookAnalyses({ [firstBook.id]: null });
     }
     // For both new and existing users, we set isAuthenticated to true to enter the app.
     setIsAuthenticated(true);
@@ -123,6 +139,7 @@ const App: React.FC = () => {
     setActiveTool(null);
     setSalesPageConfigs({});
     setSalesData({});
+    setBookAnalyses({});
     setIsAuthenticated(false);
     
     // Clear localStorage
@@ -130,6 +147,7 @@ const App: React.FC = () => {
     localStorage.removeItem('bookmarketing_activeBookId');
     localStorage.removeItem('bookmarketing_salesData');
     localStorage.removeItem('bookmarketing_salesPageConfigs');
+    localStorage.removeItem('bookmarketing_bookAnalyses');
   };
 
   const handleSetActiveBook = (bookId: string) => {
@@ -147,6 +165,7 @@ const App: React.FC = () => {
     const initialSales = generateSalesData(newBook.title, newBook.genre, 365);
     setSalesData(prev => ({...prev, [newBook.id]: initialSales}));
     setSalesPageConfigs(prev => ({...prev, [newBook.id]: null}));
+    setBookAnalyses(prev => ({...prev, [newBook.id]: null}));
 
     setIsAddBookModalOpen(false);
     setActiveTool(null);
@@ -182,6 +201,10 @@ const App: React.FC = () => {
       const newSalesConfigs = { ...salesPageConfigs };
       delete newSalesConfigs[bookToDelete.id];
       setSalesPageConfigs(newSalesConfigs);
+      
+      const newBookAnalyses = { ...bookAnalyses };
+      delete newBookAnalyses[bookToDelete.id];
+      setBookAnalyses(newBookAnalyses);
 
       if (activeBookId === bookToDelete.id) {
           setActiveBookId(updatedBooks[0].id);
@@ -208,10 +231,16 @@ const App: React.FC = () => {
       return <div className="text-center p-8"><p>Please select a book to begin.</p></div>;
     }
     switch (activeTool?.id) {
+      case 'book-dna-analyzer':
+        return <BookDNAAnalyzer onAnalysisComplete={handleUpdateBookAnalysis} existingAnalysis={activeBookAnalysis} bookTitle={activeBook.title} />;
+      case 'campaign-architecture':
+        return <CampaignArchitectureGenerator bookAnalysis={activeBookAnalysis} bookTitle={activeBook.title} />;
+      case 'multi-channel-strategy':
+        return <MultiChannelStrategyGenerator bookAnalysis={activeBookAnalysis} bookTitle={activeBook.title} />;
+      case 'asset-generation':
+        return <AssetGenerator bookAnalysis={activeBookAnalysis} bookTitle={activeBook.title} />;
       case 'image-editor':
         return <ImageEditor />;
-      case 'image-generator':
-        return <ImageGenerator />;
       case 'video-generator':
         return <VideoGenerator />;
       case 'funnel-builder':
@@ -237,8 +266,6 @@ const App: React.FC = () => {
             config={activeSalesPageConfig}
             onViewSalesPage={() => setActiveView('salesPage')}
         />;
-      case 'campaign-generator': 
-        return <CampaignGenerator />;
       case 'marketing-video-creator':
         return <MarketingVideoCreator />;
       default:
@@ -276,7 +303,7 @@ const App: React.FC = () => {
         onRequestDeleteBook={handleRequestDeleteBook}
       />
       <main className="flex flex-1 overflow-hidden">
-        <LeftSidebar user={user} salesData={activeSalesData} activeBook={activeBook} />
+        <SalesSidebar user={user} salesData={activeSalesData} activeBook={activeBook} />
         <div className="flex-1 overflow-y-auto">
           <div className="p-4 sm:p-6 lg:p-8">
             {renderMainStage()}

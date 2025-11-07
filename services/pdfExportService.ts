@@ -1,3 +1,4 @@
+
 import jsPDF from 'jspdf';
 
 // Constants for PDF layout and styling
@@ -18,12 +19,14 @@ class PdfBuilder {
     cursorY: number;
     plan: any;
     bookTitle: string;
+    sectionTitle: string;
 
-    constructor(plan: any, bookTitle: string) {
+    constructor(plan: any, bookTitle: string, sectionTitle: string) {
         this.doc = new jsPDF('p', 'mm', 'a4');
         this.cursorY = MARGIN;
         this.plan = plan;
         this.bookTitle = bookTitle || "Untitled Book";
+        this.sectionTitle = sectionTitle;
     }
     
     // Utility to check if a new page is needed before adding content
@@ -39,7 +42,7 @@ class PdfBuilder {
     addHeader() {
         this.doc.setFontSize(FONT_SIZES.small);
         this.doc.setTextColor(LIGHT_TEXT_COLOR);
-        this.doc.text('Bookmarketing.AI Campaign Plan', MARGIN, 10);
+        this.doc.text('Bookmarketing.AI Plan', MARGIN, 10);
         this.doc.text(this.bookTitle, PAGE_WIDTH - MARGIN, 10, { align: 'right' });
         this.doc.setDrawColor(LIGHT_TEXT_COLOR);
         this.doc.line(MARGIN, 12, PAGE_WIDTH - MARGIN, 12);
@@ -110,33 +113,43 @@ class PdfBuilder {
 
         this.cursorY += 4; // Spacing after paragraph/list
     }
-    
-    // Main function to build the entire PDF document
-    build() {
-        this.addTitlePage();
-        this.addStep1();
-        this.addStep2();
-        this.addStep3();
-        this.addStep4();
-        this.addFooters();
-        
-        this.doc.save(`BookmarketingAI_Plan_${this.bookTitle.replace(/[^a-z0-9]/gi, '_')}.pdf`);
-    }
 
+    addMarkdown(text: string) {
+        const lines = text.split('\n');
+        lines.forEach(line => {
+            line = line.trim();
+            if (line.startsWith('# ')) {
+                this.addH1(line.substring(2));
+            } else if (line.startsWith('## ')) {
+                this.addH2(line.substring(3));
+            } else if (line.startsWith('### ')) {
+                this.addH3(line.substring(4));
+            } else if (line.startsWith('- **')) { // Bold list item
+                const cleanLine = line.replace(/- \*\*(.*?)\*\*:/, '$1:');
+                this.addH3(cleanLine);
+            } else if (line.startsWith('- ')) {
+                this.addBody(line.substring(2), true);
+            } else if (line.trim() !== '') {
+                this.addBody(line);
+            } else {
+                this.cursorY += 4; // empty line space
+            }
+        });
+    }
+    
     addTitlePage() {
-        const bookTitle = this.bookTitle;
         this.doc.setFillColor(PRIMARY_COLOR);
         this.doc.rect(0, 0, PAGE_WIDTH, PAGE_HEIGHT, 'F');
         
         this.doc.setFont('helvetica', 'bold');
         this.doc.setFontSize(FONT_SIZES.title);
         this.doc.setTextColor('#FFFFFF');
-        const titleLines = this.doc.splitTextToSize(bookTitle, MAX_WIDTH - 20);
+        const titleLines = this.doc.splitTextToSize(this.bookTitle, MAX_WIDTH - 20);
         this.doc.text(titleLines, PAGE_WIDTH / 2, 100, { align: 'center' });
         
         this.doc.setFont('helvetica', 'normal');
         this.doc.setFontSize(FONT_SIZES.h2);
-        this.doc.text('Marketing & Campaign Plan', PAGE_WIDTH / 2, 130, { align: 'center' });
+        this.doc.text(this.sectionTitle, PAGE_WIDTH / 2, 130, { align: 'center' });
         
         this.doc.setFontSize(FONT_SIZES.small);
         this.doc.text(`Generated on: ${new Date().toLocaleDateString()}`, PAGE_WIDTH / 2, 140, { align: 'center' });
@@ -158,111 +171,97 @@ class PdfBuilder {
         this.doc.text(brandText, startX + poweredByWidth, PAGE_HEIGHT - 20);
     }
 
-    addStep1() {
+    addAnalysis(analysisText: string) {
         this.doc.addPage();
         this.addHeader();
         this.cursorY = CONTENT_START_Y;
-        this.addH1('Step 1: Comprehensive Book Analysis');
-
-        this.addH2('Genre & Market Positioning');
-        this.addBody(this.plan.step1_bookAnalysis.genreAndPositioning);
-
-        this.addH2('Unique Selling Proposition');
-        this.addBody(`"${this.plan.step1_bookAnalysis.uniqueSellingProposition}"`);
-        
-        this.addH2('Target Audience: A Day in the Life');
-        this.addBody(this.plan.step1_bookAnalysis.targetAudienceProfile.dayInTheLife);
-        
-        this.addH2('Competitive Analysis');
-        this.plan.step1_bookAnalysis.competitiveAnalysis.forEach((comp: any) => {
-            this.addH3(`${comp.title} by ${comp.author}`);
-            this.addBody(`Differentiation: ${comp.differentiation}`);
-        });
-
-        this.addH2('Commercial Potential');
-        this.addBody(this.plan.step1_bookAnalysis.commercialPotential);
+        this.addMarkdown(analysisText);
     }
     
-     addStep2() {
+     addArchitecture() {
         this.doc.addPage();
         this.addHeader();
         this.cursorY = CONTENT_START_Y;
+        const arch = this.plan.step2_campaignArchitecture;
+        if (!arch) { this.addBody('No architecture plan available.'); return; }
+
         this.addH1('Step 2: Campaign Architecture');
 
         this.addH2('24-Hour Launch Plan');
-        this.plan.step2_campaignArchitecture.launchPlan_24Hour.forEach((item: any) => {
+        arch.launchPlan_24Hour.forEach((item: any) => {
             this.addH3(item.hour);
-            this.addBody(`Task: ${item.task}\nPlatform: ${item.platform}\nObjective: ${item.objective}`);
+            this.addBody([`Task: ${item.task}`, `Platform: ${item.platform}`, `Objective: ${item.objective}`]);
         });
 
         this.addH2('30-Day Momentum Plan');
-        this.plan.step2_campaignArchitecture.momentumPlan_30Day.forEach((item: any) => {
+        arch.momentumPlan_30Day.forEach((item: any) => {
             this.addH3(item.day);
-            this.addBody(`Task: ${item.task}\nPlatform: ${item.platform}\nObjective: ${item.objective}`);
+            this.addBody([`Task: ${item.task}`, `Platform: ${item.platform}`, `Objective: ${item.objective}`]);
         });
         
         this.addH2('90-Day Viral Expansion');
-        this.addBody(this.plan.step2_campaignArchitecture.viralPlan_90Day);
+        this.addBody(arch.viralPlan_90Day);
 
         this.addH2('365-Day Million-Reader Roadmap');
-        this.addBody(this.plan.step2_campaignArchitecture.millionReaderRoadmap_365Day);
+        this.addBody(arch.millionReaderRoadmap_365Day);
     }
 
-    addStep3() {
+    addStrategy() {
         this.doc.addPage();
         this.addHeader();
         this.cursorY = CONTENT_START_Y;
+        const strat = this.plan.step3_multiChannelCampaigns;
+        if (!strat) { this.addBody('No strategy plan available.'); return; }
+
         this.addH1('Step 3: Multi-Channel Strategy');
 
         this.addH2('Amazon Optimization');
         this.addH3('Keywords');
-        this.addBody(this.plan.step3_multiChannelCampaigns.amazonStrategy.keywords.join(', '));
+        this.addBody(strat.amazonStrategy.keywords.join(', '));
         this.addH3('Categories');
-        this.addBody(this.plan.step3_multiChannelCampaigns.amazonStrategy.categories, true);
+        this.addBody(strat.amazonStrategy.categories, true);
         
         this.addH2('Social Media Strategy');
-        this.plan.step3_multiChannelCampaigns.socialMediaCampaigns.forEach((sm: any) => {
+        strat.socialMediaCampaigns.forEach((sm: any) => {
             this.addH3(`${sm.platform} Strategy`);
             this.addBody(sm.strategy);
         });
 
-        // The email sequence section gets its own set of pages for clarity.
-        const emails = this.plan.step3_multiChannelCampaigns.emailMarketingSequence;
+        const emails = strat.emailMarketingSequence;
         if (emails && emails.length > 0) {
-             emails.forEach((email: any, index: number) => {
-                this.doc.addPage();
-                this.addHeader();
-                this.cursorY = CONTENT_START_Y;
-
-                this.addH2('Email Nurture Sequence');
-                this.addH3(`Email ${index + 1} of ${emails.length}: Day ${email.day} - ${email.subject}`);
+             this.addH2('Email Nurture Sequence');
+             emails.forEach((email: any) => {
+                this.addH3(`Day ${email.day}: ${email.subject}`);
                 this.addBody(email.body);
             });
         }
     }
 
-    addStep4() {
+    addAssets() {
         this.doc.addPage();
         this.addHeader();
         this.cursorY = CONTENT_START_Y;
+        const assets = this.plan.step4_assetGeneration;
+        if (!assets) { this.addBody('No asset plan available.'); return; }
+        
         this.addH1('Step 4: Asset Generation');
 
         this.addH2('Book Blurbs');
         this.addH3('Short');
-        this.addBody(this.plan.step4_assetGeneration.copyLibrary.bookBlurbs.short);
+        this.addBody(assets.copyLibrary.bookBlurbs.short);
         this.addH3('Medium');
-        this.addBody(this.plan.step4_assetGeneration.copyLibrary.bookBlurbs.medium);
+        this.addBody(assets.copyLibrary.bookBlurbs.medium);
         this.addH3('Long');
-        this.addBody(this.plan.step4_assetGeneration.copyLibrary.bookBlurbs.long);
+        this.addBody(assets.copyLibrary.bookBlurbs.long);
         
         this.addH2('Ad Copy Hooks');
-        this.plan.step4_assetGeneration.copyLibrary.adCopyHooks.forEach((cat: any) => {
+        assets.copyLibrary.adCopyHooks.forEach((cat: any) => {
             this.addH3(cat.angle);
             this.addBody(cat.hooks, true);
         });
         
         this.addH2('Video Trailer Scripts');
-        this.plan.step4_assetGeneration.videoTrailerScripts.forEach((script: any) => {
+        assets.videoTrailerScripts.forEach((script: any) => {
             this.addH3(script.concept);
             this.addBody(script.script);
         });
@@ -276,17 +275,47 @@ class PdfBuilder {
             this.doc.setTextColor(LIGHT_TEXT_COLOR);
             if(i > 1) { // No footer on title page
                 this.doc.text('Generated with Bookmarketing.AI', MARGIN, PAGE_HEIGHT - 10);
-                this.doc.text(`Page ${i} of ${pageCount}`, PAGE_WIDTH - MARGIN, PAGE_HEIGHT - 10, { align: 'right' });
+                this.doc.text(`Page ${i - 1} of ${pageCount - 1}`, PAGE_WIDTH - MARGIN, PAGE_HEIGHT - 10, { align: 'right' });
             }
         }
     }
+    
+    build(buildSteps: (() => void)[]) {
+        this.addTitlePage();
+        buildSteps.forEach(step => step());
+        this.addFooters();
+        this.doc.save(`BookmarketingAI_${this.sectionTitle.replace(/\s/g, '')}_${this.bookTitle.replace(/[^a-z0-9]/gi, '_')}.pdf`);
+    }
 }
 
-// The main function exported to be used in the component
-export const exportCampaignToPDF = (plan: any, manuscriptTitle: string): Promise<void> => {
+export const exportAnalysisToPDF = (analysisText: string, bookTitle: string): Promise<void> => {
     return new Promise((resolve) => {
-        const builder = new PdfBuilder(plan, manuscriptTitle);
-        builder.build();
+        const builder = new PdfBuilder({}, bookTitle, 'Book DNA Analysis');
+        builder.build([() => builder.addAnalysis(analysisText)]);
+        resolve();
+    });
+};
+
+export const exportArchitectureToPDF = (plan: any, bookTitle: string): Promise<void> => {
+    return new Promise((resolve) => {
+        const builder = new PdfBuilder(plan, bookTitle, 'Campaign Architecture');
+        builder.build([() => builder.addArchitecture()]);
+        resolve();
+    });
+};
+
+export const exportStrategyToPDF = (plan: any, bookTitle: string): Promise<void> => {
+    return new Promise((resolve) => {
+        const builder = new PdfBuilder(plan, bookTitle, 'Multi-Channel Strategy');
+        builder.build([() => builder.addStrategy()]);
+        resolve();
+    });
+};
+
+export const exportAssetsToPDF = (plan: any, bookTitle: string): Promise<void> => {
+    return new Promise((resolve) => {
+        const builder = new PdfBuilder(plan, bookTitle, 'Asset Generation');
+        builder.build([() => builder.addAssets()]);
         resolve();
     });
 };
