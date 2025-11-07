@@ -515,7 +515,8 @@ const FULL_CAMPAIGN_SCHEMA = {
                 },
                 performanceMetrics: { type: Type.ARRAY, items: { type: Type.STRING }, description: "List of key KPIs to track." },
                 riskAssessment: { type: Type.STRING, description: "Potential risks and mitigation strategies. Format as Markdown with paragraphs separated by blank lines." }
-            }
+            },
+            required: ['launchPlan_24Hour', 'momentumPlan_30Day', 'viralPlan_90Day', 'millionReaderRoadmap_365Day']
         },
         step3_multiChannelCampaigns: {
             type: Type.OBJECT,
@@ -605,7 +606,8 @@ const FULL_CAMPAIGN_SCHEMA = {
                         }
                     }
                 }
-            }
+            },
+            required: ['amazonStrategy', 'socialMediaCampaigns', 'emailMarketingSequence']
         },
         step4_assetGeneration: {
             type: Type.OBJECT,
@@ -619,7 +621,8 @@ const FULL_CAMPAIGN_SCHEMA = {
                                 short: { type: Type.STRING },
                                 medium: { type: Type.STRING },
                                 long: { type: Type.STRING },
-                            }
+                            },
+                            required: ['short', 'medium', 'long']
                         },
                         adCopyHooks: {
                             type: Type.ARRAY,
@@ -628,10 +631,12 @@ const FULL_CAMPAIGN_SCHEMA = {
                                 properties: {
                                     angle: { type: Type.STRING, description: "e.g., 'Curiosity', 'Urgency', 'Social Proof'" },
                                     hooks: { type: Type.ARRAY, items: { type: Type.STRING } }
-                                }
+                                },
+                                required: ['angle', 'hooks']
                             }
                         },
-                    }
+                    },
+                    required: ['bookBlurbs', 'adCopyHooks']
                 },
                 visualAssetGuidelines: { type: Type.STRING, description: "Guidelines and ideas for creating visual assets. Format as Markdown with paragraphs separated by blank lines." },
                 videoTrailerScripts: {
@@ -641,7 +646,8 @@ const FULL_CAMPAIGN_SCHEMA = {
                         properties: {
                             concept: { type: Type.STRING, description: "e.g., 'Plot-Focused', 'Theme-Focused'" },
                             script: { type: Type.STRING, description: "A complete 30-second video script with scene descriptions. Format as Markdown with paragraphs separated by blank lines." }
-                        }
+                        },
+                        required: ['concept', 'script']
                     }
                 },
                 pressReleaseTemplate: { type: Type.STRING, description: "A ready-to-use press release template. Format as Markdown with paragraphs separated by blank lines." },
@@ -653,10 +659,12 @@ const FULL_CAMPAIGN_SCHEMA = {
                             week: { type: Type.INTEGER },
                             focus: { type: Type.STRING },
                             actionSteps: { type: Type.ARRAY, items: { type: Type.STRING } },
-                        }
+                        },
+                        required: ['week', 'focus', 'actionSteps']
                     }
                 }
-            }
+            },
+            required: ['copyLibrary']
         }
     }
 };
@@ -665,21 +673,24 @@ const ARCHITECTURE_SCHEMA = {
     type: Type.OBJECT,
     properties: {
         step2_campaignArchitecture: FULL_CAMPAIGN_SCHEMA.properties.step2_campaignArchitecture,
-    }
+    },
+    required: ['step2_campaignArchitecture']
 };
 
 const STRATEGY_SCHEMA = {
     type: Type.OBJECT,
     properties: {
         step3_multiChannelCampaigns: FULL_CAMPAIGN_SCHEMA.properties.step3_multiChannelCampaigns,
-    }
+    },
+    required: ['step3_multiChannelCampaigns']
 };
 
 const ASSETS_SCHEMA = {
     type: Type.OBJECT,
     properties: {
         step4_assetGeneration: FULL_CAMPAIGN_SCHEMA.properties.step4_assetGeneration,
-    }
+    },
+    required: ['step4_assetGeneration']
 };
 
 const generateCampaignPart = async (analysisText: string, prompt: string, schema: any, context: string): Promise<any> => {
