@@ -1,5 +1,13 @@
 <div align="center">
 <img alt="Bookmarketing.AI" src="./Bookmarketing_ai.png" />
+
+[![License](https://img.shields.io/badge/license-Proprietary-blue.svg)](LICENSE)
+[![Wiki](https://img.shields.io/badge/docs-wiki-brightgreen.svg)](https://github.com/leonidas-esquire/Bookmarketing.AI/wiki)
+[![React](https://img.shields.io/badge/React-18.x-61DAFB?logo=react)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-5.x-646CFF?logo=vite)](https://vitejs.dev/)
+[![Powered by Gemini](https://img.shields.io/badge/Powered%20by-Google%20Gemini-4285F4?logo=google)](https://ai.google.dev/)
+
 </div>
 
 > **Bookmarketing.AI** is your all-in-one solution for turning your manuscript into a bestseller. We provide a suite of AI-powered tools designed to handle the complexities of book marketing, from audience analysis to targeted outreach. Our platform empowers authors to focus on what they do best—writing—while our intelligent software works to connect their stories with one million readers. Your journey to becoming a bestselling author starts here.
@@ -177,3 +185,30 @@ Make sure you have [Node.js](https://nodejs.org/) installed on your system.
 ---
 
 **View your app in AI Studio:** https://ai.studio/apps/drive/1k6Wu0x9lfGdc8XlVPlHhiSW4FO9--DA0
+
+
+## 🤝 Contributing
+
+We welcome contributions from the community! Whether you're fixing bugs, adding new features, or improving documentation, your help is appreciated.
+
+Please read our **[Contributing Guidelines](CONTRIBUTING.md)** to get started. Make sure to also review our **[Code of Conduct](CODE_OF_CONDUCT.md)** to understand our community standards.
+
+## 📄 License
+
+This project is proprietary software. All rights reserved. Please contact the repository owner for licensing inquiries.
+
+## 🌟 Acknowledgments
+
+-   **Powered by [Google Gemini API](https://ai.google.dev/)** — Enabling intelligent, AI-driven marketing capabilities
+-   **Built with [React](https://react.dev/)** — For a modern, component-based user interface
+-   **Accelerated by [Vite](https://vitejs.dev/)** — For lightning-fast development and build times
+
+---
+
+<div align="center">
+
+**Made with ❤️ for authors who want to reach one million readers**
+
+[Website](https://ai.studio/apps/drive/1k6Wu0x9lfGdc8XlVPlHhiSW4FO9--DA0) • [Documentation](https://github.com/leonidas-esquire/Bookmarketing.AI/wiki) • [Report Bug](https://github.com/leonidas-esquire/Bookmarketing.AI/issues) • [Request Feature](https://github.com/leonidas-esquire/Bookmarketing.AI/issues)
+
+</div>
